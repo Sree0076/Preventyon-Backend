@@ -5,6 +5,7 @@ using Preventyon.Data;
 using Preventyon.EndPoints;
 using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,12 +26,14 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Preventyon API", Version = "v1" });
 });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IncidentRepository>();
 builder.Services.AddScoped< EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
 
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseNpgsql("Host=preventyonserver.postgres.database.azure.com;Database=Preventyon;Username=preventyon;Password=root@2024"));

@@ -17,6 +17,8 @@ namespace Preventyon.Data
         public DbSet<Role> Role { get; set; } 
         public DbSet <Permission> Permission { get; set; }
 
+        public DbSet<AssignedIncidents> AssignedIncidents { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -32,7 +34,12 @@ namespace Preventyon.Data
                 .HasOne(e => e.Role) 
                 .WithMany(r => r.Employees) 
                 .HasForeignKey(e => e.RoleId);
-
+/*
+            modelBuilder.Entity<AssignedIncidents>()
+                        .HasOne(a => a.Incident)
+                        .WithMany(i => i.AssignedIncidents)
+                        .HasForeignKey(a => a.IncidentId);
+*/
         }
     }
 }

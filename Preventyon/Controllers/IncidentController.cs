@@ -33,6 +33,8 @@ namespace Preventyon.Controllers
         }
 
 
+
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Incident>>> GetDraftIncidentsByEmployeeId(int employeeId)
         {
@@ -40,12 +42,16 @@ namespace Preventyon.Controllers
             return Ok(draftIncidents);
         }
 
+
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Incident>>> GetIncidentsByEmployeeId(int employeeId)
         {
             var Incidents = await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
             return Ok(Incidents);
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Incident>> GetIncident(int id)
@@ -59,6 +65,8 @@ namespace Preventyon.Controllers
 
             return Ok(incident);
         }
+
+
 
         [HttpPost]
         public async Task<ActionResult<Incident>> CreateIncident([FromBody] CreateIncidentDTO createIncidentDto)
@@ -84,10 +92,6 @@ namespace Preventyon.Controllers
 
                 return BadRequest(ex);
             }
-
-
-
-
 
         }
 

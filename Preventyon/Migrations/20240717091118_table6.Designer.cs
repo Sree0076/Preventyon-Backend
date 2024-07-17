@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Preventyon.Data;
@@ -11,9 +12,11 @@ using Preventyon.Data;
 namespace Preventyon.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    partial class ApiContextModelSnapshot : ModelSnapshot
+    [Migration("20240717091118_table6")]
+    partial class table6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -237,7 +240,7 @@ namespace Preventyon.Migrations
             modelBuilder.Entity("Preventyon.Models.Incident", b =>
                 {
                     b.HasOne("Preventyon.Models.Employee", null)
-                        .WithMany("Incident")
+                        .WithMany("Incidents")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -256,7 +259,7 @@ namespace Preventyon.Migrations
 
             modelBuilder.Entity("Preventyon.Models.Employee", b =>
                 {
-                    b.Navigation("Incident");
+                    b.Navigation("Incidents");
                 });
 
             modelBuilder.Entity("Preventyon.Models.Incident", b =>

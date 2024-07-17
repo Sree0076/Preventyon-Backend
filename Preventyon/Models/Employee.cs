@@ -25,7 +25,7 @@ namespace Preventyon.Models
 
         public Role Role { get; set; }
 
-        public ICollection<Incident> Incidents { get; set; }
+        public ICollection<Incident> Incident { get; set; }
 
     }
 }

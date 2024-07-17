@@ -25,9 +25,8 @@ namespace Preventyon.Repository
         public async Task<IEnumerable<Incident>> GetDraftIncidentsByEmployeeId(int employeeId)
         {
             return await _context.Incident.Where(i => i.IsDraft && i.EmployeeId == employeeId).ToListAsync();
-           
-        
-    }
+               
+        }
         public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId)
         {
            var incidents = await _context.Incident.Where(i => i.EmployeeId == employeeId).ToListAsync();

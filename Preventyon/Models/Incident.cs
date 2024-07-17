@@ -70,6 +70,7 @@ namespace Preventyon.Models
         public int EmployeeId { get; set; }
 
 
+     /*   public ICollection<AssignedIncidents> AssignedIncidents { get; set; }*//**/
 
         public DateTime createdAt { set; get; }
 
