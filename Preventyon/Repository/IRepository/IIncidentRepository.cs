@@ -1,4 +1,5 @@
 ﻿using Preventyon.Models;
+using Preventyon.Models.DTO.Incidents;
 
 namespace Preventyon.Repository.IRepository
 {
@@ -8,6 +9,6 @@ namespace Preventyon.Repository.IRepository
         Task<IEnumerable<Incident>> GetDraftIncidentsByEmployeeId(int employeeId);
         Task<Incident> GetIncidentById(int id);
         Task<Incident> AddIncident(Incident incident);
-        Task<Incident> UpdateIncident(Incident incident);
+        Task<Incident> UpdateIncident(Incident incident, UpdateIncidentDTO updateIncidentDto);
     }
 }

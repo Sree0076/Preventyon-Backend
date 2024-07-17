@@ -27,6 +27,8 @@ namespace Preventyon.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<Incident>>> GetIncidents()
         {
             return Ok(await _incidentRepository.GetAllIncidents());
@@ -34,8 +36,9 @@ namespace Preventyon.Controllers
 
 
 
-
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] 
         public async Task<ActionResult<IEnumerable<Incident>>> GetDraftIncidentsByEmployeeId(int employeeId)
         {
             var draftIncidents = await _incidentRepository.GetDraftIncidentsByEmployeeId(employeeId);
@@ -45,6 +48,8 @@ namespace Preventyon.Controllers
 
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<Incident>>> GetIncidentsByEmployeeId(int employeeId)
         {
             var Incidents = await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
@@ -54,6 +59,9 @@ namespace Preventyon.Controllers
 
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Incident>> GetIncident(int id)
         {
             var incident = await _incidentRepository.GetIncidentById(id);
@@ -69,6 +77,8 @@ namespace Preventyon.Controllers
 
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Incident))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Incident>> CreateIncident([FromBody] CreateIncidentDTO createIncidentDto)
         {
             createIncidentDto.EmployeeId = 2;
@@ -96,16 +106,36 @@ namespace Preventyon.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateIncident(int id, Incident incident)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateIncident(int id, [FromBody] UpdateIncidentDTO updateIncidentDto)
         {
-            if (id != incident.Id)
+            if (id <= 0)
             {
-                return BadRequest();
+                return BadRequest("Invalid incident ID");
             }
 
-            await _incidentRepository.UpdateIncident(incident);
+            if (updateIncidentDto == null)
+            {
+                return BadRequest("Incident update data is required");
+            }
 
-            return NoContent();
+            var incident = await _incidentRepository.GetIncidentById(id);
+            if (incident == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                await _incidentRepository.UpdateIncident(incident, updateIncidentDto);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
 
