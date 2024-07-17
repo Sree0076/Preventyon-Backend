@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Preventyon.Data;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
@@ -11,10 +12,12 @@ namespace Preventyon.Repository
 
 
         private readonly ApiContext _context;
+        private readonly IMapper _mapper;
 
-        public IncidentRepository(ApiContext context)
+        public IncidentRepository(ApiContext context,IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Incident>> GetAllIncidents()
@@ -77,8 +80,10 @@ namespace Preventyon.Repository
             return incident;
         }
 
-        public async Task<Incident> UpdateIncident(Incident incident)
+        public async Task<Incident> UpdateIncident(Incident incident, UpdateIncidentDTO updateIncidentDto)
         {
+            _mapper.Map(updateIncidentDto, incident);
+
             _context.Entry(incident).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return incident;
