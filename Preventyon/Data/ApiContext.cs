@@ -34,12 +34,12 @@ namespace Preventyon.Data
                 .HasOne(e => e.Role) 
                 .WithMany(r => r.Employees) 
                 .HasForeignKey(e => e.RoleId);
-/*
-            modelBuilder.Entity<AssignedIncidents>()
+
+/*            modelBuilder.Entity<AssignedIncidents>()
                         .HasOne(a => a.Incident)
                         .WithMany(i => i.AssignedIncidents)
-                        .HasForeignKey(a => a.IncidentId);
-*/
+                        .HasForeignKey(a => a.IncidentId);*/
+
         }
     }
 }

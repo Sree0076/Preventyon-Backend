@@ -59,13 +59,5 @@ namespace Preventyon.Repository
             return await _context.Employees.FindAsync(id);
         }
 
-
-        /*        public async Task<Employee> GetEmployeeWithIncidents(int employeeId)
-                {
-                return await _context.Employees
-                                     .Include(e => e.Incidents)
-                                     .FirstOrDefaultAsync(e => e.Id == employeeId);
-
-                }*/
     }
 }

@@ -43,7 +43,6 @@ namespace Preventyon.Controllers
         }
 
 
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Incident>>> GetIncidentsByEmployeeId(int employeeId)
         {
