@@ -5,6 +5,8 @@ using Preventyon.Data;
 using Preventyon.EndPoints;
 using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
+using Preventyon.Service;
+using Preventyon.Service.IService;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,7 +35,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IncidentRepository>();
 builder.Services.AddScoped< EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseNpgsql("Host=preventyonserver.postgres.database.azure.com;Database=Preventyon;Username=preventyon;Password=root@2024"));

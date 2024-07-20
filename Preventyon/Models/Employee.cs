@@ -21,7 +21,7 @@ namespace Preventyon.Models
 
         [Required]
         [StringLength(100)]
-        [ForeignKey("Role")]
+ 
         public int RoleId { get; set; }
 
         public Role Role { get; set; }
@@ -32,6 +32,7 @@ namespace Preventyon.Models
         public DateTime UpdatedAt { get; set; }
         public ICollection<Incident> Incident { get; set; }
 
+    /*    public Admin Admin { get; set; }*/
         public Employee()
         {
             CreatedAt= DateTime.Now;

@@ -32,7 +32,7 @@ namespace Preventyon.Repository
         }
         public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId)
         {
-           var incidents = await _context.Incident.Where(i => i.EmployeeId == employeeId).ToListAsync();
+           var incidents = await _context.Incident.Where(i => i.EmployeeId == employeeId && i.IsDraft==false).ToListAsync();
             var privacyIncidents = incidents.Where(i => i.IncidentType.Contains("Privacy Incidents")).ToList();
             var qualityIncidents = incidents.Where(i => i.IncidentType.Contains("Quality Incidents")).ToList();
             var securityIncidents = incidents.Where(i => i.IncidentType.Contains("Security Incidents")).ToList();
@@ -62,7 +62,7 @@ namespace Preventyon.Repository
                 SecurityTotalIncidents = totalSecurityIncidents,
                 SecurityPendingIncidents = pendingSecurityIncidents,
                 SecurityClosedIncidents = closedSecurityIncidents,
-                Incidents = incidents
+                Incidents = await _context.Incident.Where(i => i.EmployeeId == employeeId ).ToListAsync()
             };
 
             return incidentStats;
@@ -72,7 +72,7 @@ namespace Preventyon.Repository
         {
             return await _context.Incident.FindAsync(id);
         }
-
+  
         public async Task<Incident> AddIncident(Incident incident)
         {
             _context.Incident.Add(incident);
@@ -89,6 +89,14 @@ namespace Preventyon.Repository
             return incident;
         }
 
+        public async Task<Incident> UserUpdateIncident(Incident incident, CreateIncidentDTO updateIncidentDto)
+        {
+            _mapper.Map(updateIncidentDto, incident);
+
+            _context.Entry(incident).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return incident;
+        }
         public async Task DeleteIncident(int id)
         {
             var incident = await _context.Incident.FindAsync(id);
