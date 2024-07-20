@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Preventyon.Models;
 using Preventyon.Models.DTO;
+using Preventyon.Models.DTO.AdminDTO;
 using Preventyon.Models.DTO.Employee;
 using Preventyon.Models.DTO.Incidents;
 
@@ -19,6 +20,7 @@ namespace Preventyon
             CreateMap<Role, RoleDTO>();
             CreateMap<Permission, PermissionDTO>();
             CreateMap<UpdateIncidentDTO, Incident>();
+            CreateMap<Admin, CreateAdminDTO>().ReverseMap();
 
         }
     }

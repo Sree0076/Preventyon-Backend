@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Preventyon.Data;
@@ -11,9 +12,11 @@ using Preventyon.Data;
 namespace Preventyon.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    partial class ApiContextModelSnapshot : ModelSnapshot
+    [Migration("20240717163922_table9")]
+    partial class table9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,34 +24,6 @@ namespace Preventyon.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Preventyon.Models.Admin", b =>
-                {
-                    b.Property<int>("AdminId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AdminId"));
-
-                    b.Property<int>("AssignedBy")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("AssignedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("AdminId");
-
-                    b.HasIndex("EmployeeId")
-                        .IsUnique();
-
-                    b.ToTable("Admins");
-                });
 
             modelBuilder.Entity("Preventyon.Models.AssignedIncidents", b =>
                 {
@@ -252,17 +227,6 @@ namespace Preventyon.Migrations
                     b.ToTable("Role");
                 });
 
-            modelBuilder.Entity("Preventyon.Models.Admin", b =>
-                {
-                    b.HasOne("Preventyon.Models.Employee", "Employee")
-                        .WithOne("Admin")
-                        .HasForeignKey("Preventyon.Models.Admin", "EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-                });
-
             modelBuilder.Entity("Preventyon.Models.AssignedIncidents", b =>
                 {
                     b.HasOne("Preventyon.Models.Incident", "Incident")
@@ -307,8 +271,6 @@ namespace Preventyon.Migrations
 
             modelBuilder.Entity("Preventyon.Models.Employee", b =>
                 {
-                    b.Navigation("Admin");
-
                     b.Navigation("Incident");
                 });
 

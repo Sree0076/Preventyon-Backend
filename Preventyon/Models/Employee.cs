@@ -14,18 +14,28 @@ namespace Preventyon.Models
         [StringLength(100)]
         public string Name { get; set; }
 
+        public string Email { get; set; }
         [Required]
         [StringLength(100)]
         public string Department { get; set; }
 
         [Required]
         [StringLength(100)]
-        [ForeignKey("Role")]
+ 
         public int RoleId { get; set; }
 
         public Role Role { get; set; }
 
+        public string Designation { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public ICollection<Incident> Incident { get; set; }
 
+    /*    public Admin Admin { get; set; }*/
+        public Employee()
+        {
+            CreatedAt= DateTime.Now;
+        }
     }
 }

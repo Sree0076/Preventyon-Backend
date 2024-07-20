@@ -46,7 +46,6 @@ namespace Preventyon.Controllers
         }
 
 
-
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -74,6 +73,21 @@ namespace Preventyon.Controllers
             return Ok(incident);
         }
 
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Incident>> GetUserUpdateIncident(int id)
+        {
+            var incident = await _incidentRepository.GetIncidentById(id);
+
+            if (incident == null)
+            {
+                return NotFound();
+            }
+            CreateIncidentDTO userUpdateIncident = _mapper.Map<CreateIncidentDTO>(incident);
+            return Ok(userUpdateIncident);
+        }
 
 
         [HttpPost]
@@ -138,6 +152,38 @@ namespace Preventyon.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UserUpdateIncident(int id, [FromBody] CreateIncidentDTO createIncidentDto)
+        {
+            if (id <= 0)
+            {
+                return BadRequest("Invalid incident ID");
+            }
+
+            if (createIncidentDto == null)
+            {
+                return BadRequest("Incident update data is required");
+            }
+
+            var incident = await _incidentRepository.GetIncidentById(id);
+            if (incident == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                await _incidentRepository.UserUpdateIncident(incident, createIncidentDto);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
     }
 }

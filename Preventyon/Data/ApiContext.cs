@@ -14,6 +14,8 @@ namespace Preventyon.Data
         }
         public DbSet<Incident> Incident { get; set; }
         public DbSet<Employee> Employees { get; set; }
+
+        public DbSet<Admin> Admins { get; set; }
         public DbSet<Role> Role { get; set; } 
         public DbSet <Permission> Permission { get; set; }
 
@@ -34,12 +36,18 @@ namespace Preventyon.Data
                 .HasOne(e => e.Role) 
                 .WithMany(r => r.Employees) 
                 .HasForeignKey(e => e.RoleId);
-/*
-            modelBuilder.Entity<AssignedIncidents>()
-                        .HasOne(a => a.Incident)
-                        .WithMany(i => i.AssignedIncidents)
-                        .HasForeignKey(a => a.IncidentId);
-*/
+
+            /*            modelBuilder.Entity<AssignedIncidents>()
+                                    .HasOne(a => a.Incident)
+                                    .WithMany(i => i.AssignedIncidents)
+                                    .HasForeignKey(a => a.IncidentId);*/
+
+/*            modelBuilder.Entity<Admin>()
+           .HasOne(a => a.Employee)
+                      .WithOne(e => e.Admin)
+                      .HasForeignKey<Admin>(a => a.EmployeeId)
+                      .OnDelete(DeleteBehavior.Restrict);*/
+
         }
     }
 }
