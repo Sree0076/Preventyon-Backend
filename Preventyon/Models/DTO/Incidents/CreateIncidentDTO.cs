@@ -10,6 +10,7 @@
         public string Priority { get; set; }
         public bool IsDraft { get; set; }
         public int EmployeeId { get; set; }
+        public List<IFormFile> DocumentFiles { get; set; }
     }
 
 
