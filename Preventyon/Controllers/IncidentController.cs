@@ -116,7 +116,7 @@ namespace Preventyon.Controllers
                     foreach (IFormFile document in createIncidentDto.DocumentFiles)
                     {
                         var fileName = Guid.NewGuid().ToString() + Path.GetExtension(document.FileName);
-                        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
 
                         if (!Directory.Exists(uploadPath))
                         {
@@ -130,9 +130,7 @@ namespace Preventyon.Controllers
                             await createIncidentDto.DocumentFiles[0].CopyToAsync(stream);
                         }
 
-                        var request = HttpContext.Request;
-                        var baseUrl = $"{request.Scheme}://{request.Host}";
-                        documentUrls.Add($"{baseUrl}/uploads/{fileName}");
+                        documentUrls.Add($"/images/{fileName}");
                     }
 
                 }
