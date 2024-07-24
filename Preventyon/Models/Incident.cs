@@ -84,6 +84,7 @@ namespace Preventyon.Models
         }
        
 
+        public List<string> DocumentUrls { get; set; }
     }
 
 }

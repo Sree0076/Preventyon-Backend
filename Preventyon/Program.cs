@@ -8,7 +8,6 @@ using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
 using Preventyon.Service;
 using Preventyon.Service.IService;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +33,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IncidentRepository>();
-builder.Services.AddScoped< EmployeeRepository>();
+builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped< AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
@@ -54,12 +53,14 @@ app.ConfigureEndPoints();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.WebRootPath, "images"))
 ,
     RequestPath = "/images"
 });
+
 
 app.MapControllers();
 

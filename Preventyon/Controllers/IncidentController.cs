@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Preventyon.Data;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
 using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
-using System.ComponentModel.DataAnnotations;
 
 
 namespace Preventyon.Controllers
@@ -39,7 +35,7 @@ namespace Preventyon.Controllers
 /*
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)] 
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<Incident>>> GetDraftIncidentsByEmployeeId(int employeeId)
         {
             var draftIncidents = await _incidentRepository.GetDraftIncidentsByEmployeeId(employeeId);
@@ -97,6 +93,12 @@ namespace Preventyon.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<Incident>> CreateIncident([FromForm] CreateIncidentDTO createIncidentDto)
         {
+
+            if (createIncidentDto == null)
+            {
+                return BadRequest("Incident data is required");
+            }
+
             var employee = await _employeeRepository.GetEmployeeByIdAsync(createIncidentDto.EmployeeId);
             if (employee == null)
             {
@@ -105,6 +107,7 @@ namespace Preventyon.Controllers
 
             try
             {
+
                 List<string> documentUrls = new List<string>();
                 if (createIncidentDto.DocumentUrls != null)
                 {
@@ -122,7 +125,9 @@ namespace Preventyon.Controllers
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
+
                             await document.CopyToAsync(stream);
+
                         }
 
                         documentUrls.Add($"/images/{fileName}");
@@ -136,6 +141,8 @@ namespace Preventyon.Controllers
                 incident.IncidentStatus = "pending";
 
                 await _incidentRepository.AddIncident(incident);
+
+
 
                 return CreatedAtAction(nameof(GetIncident), new { id = incident.Id }, incident);
             }

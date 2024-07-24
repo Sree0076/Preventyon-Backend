@@ -12,6 +12,7 @@
         public int EmployeeId { get; set; }
 
         public List<IFormFile> DocumentUrls { get; set; }
+
     }
 
 
