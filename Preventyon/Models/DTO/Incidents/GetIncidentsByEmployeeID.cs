@@ -13,7 +13,7 @@ namespace Preventyon.Models.DTO.Incidents
         public int QualityPendingIncidents { get; set; }
         public int QualityClosedIncidents { get; set; }
 
-        public List<Incident> Incidents { get; set; }
+        public List<TableFetchIncidentsDto> Incidents { get; set; }
 
 
     }

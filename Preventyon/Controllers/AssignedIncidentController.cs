@@ -5,6 +5,7 @@ using Preventyon.Models;
 using Microsoft.EntityFrameworkCore;
 using Preventyon.Repository.IRepository;
 using System.Text.Json;
+using Preventyon.Repository;
 
 
 namespace Preventyon.Controllers
@@ -23,7 +24,7 @@ namespace Preventyon.Controllers
         }
 
         [HttpPost("AssignIncidentToEmployees/{incidentId}")]
-        public async Task AssignIncidentToEmployees(int incidentId, [FromBody] List<int> employeeIds)
+        public async Task AssignIncidentToEmployees(int incidentId, [FromBody] List<int> employeeIds,IncidentRepository incidentRepository,EmployeeRepository employeeRepository)
         {
          
 
@@ -35,6 +36,13 @@ namespace Preventyon.Controllers
                 AssignedTo = assignedToJson,
              
             };
+            var employeeNames = employeeRepository.GetEmployees().Result.Where(e => employeeIds.Contains(e.Id))
+               .Select(e => e.Name)
+               .ToList();
+            var incident =incidentRepository.GetIncidentById(incidentId).Result;
+            incident.IncidentStatus = "progress";
+            incident.ActionAssignedTo = JsonSerializer.Serialize(employeeNames);
+
 
             _context.AssignedIncidents.Add(assignment);
             await _context.SaveChangesAsync();
@@ -43,8 +51,6 @@ namespace Preventyon.Controllers
         [HttpGet]
         public async Task<List<Incident>> GetAssignedIncidentsForEmployee(int employeeId)
         {
-          
-
             var employeeIdString = JsonSerializer.Serialize(employeeId);
 
             var assignments = await _context.AssignedIncidents

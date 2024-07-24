@@ -29,14 +29,29 @@ namespace Preventyon.Service
 
             try
             {
-                existingEmployee.RoleId = 1;
+                if (createAdminDTO.isIncidentMangenet == true && createAdminDTO.isUserMangenet == true)
+                {
+                    existingEmployee.RoleId = 1;
+                }
+                else if(createAdminDTO.isIncidentMangenet == true && createAdminDTO.isUserMangenet == false)
+                {
+                    existingEmployee.RoleId = 3;
+                }
+                else if (createAdminDTO.isIncidentMangenet == false && createAdminDTO.isUserMangenet == true)
+                {
+                    existingEmployee.RoleId = 4;
+                }
+                else 
+                {
+                    existingEmployee.RoleId = 5;
+                }
                 await _employeeRepository.UpdateAsync(existingEmployee);
 
                 var admin = new Admin
                 {
                     EmployeeId = createAdminDTO.EmployeeId,
                     AssignedBy = createAdminDTO.AssignedBy,
-                    Status = true,
+                    Status = createAdminDTO.Status,
                 };
 
                 _context.Admins.Add(admin);

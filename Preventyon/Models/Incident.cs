@@ -67,10 +67,14 @@ namespace Preventyon.Models
 
         public bool IsDraft { set; get; }
 
+
+
         public int EmployeeId { get; set; }
 
 
-      /*  public ICollection<AssignedIncidents> AssignedIncidents { get; set; }*/
+        public List<string> DocumentUrls { get; set; }
+
+        /*  public ICollection<AssignedIncidents> AssignedIncidents { get; set; }*/
 
         public DateTime createdAt { set; get; }
 
@@ -78,6 +82,7 @@ namespace Preventyon.Models
         {
             createdAt = DateTime.UtcNow;
         }
+       
 
     }
 

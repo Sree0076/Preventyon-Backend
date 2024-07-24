@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Preventyon;
 using Preventyon.Data;
@@ -35,12 +36,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IncidentRepository>();
 builder.Services.AddScoped< EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped< AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseNpgsql("Host=preventyonserver.postgres.database.azure.com;Database=Preventyon;Username=preventyon;Password=root@2024"));
 var app = builder.Build();
+
 app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
@@ -52,7 +54,12 @@ app.ConfigureEndPoints();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.WebRootPath, "images"))
+,
+    RequestPath = "/images"
+});
 
 app.MapControllers();
 

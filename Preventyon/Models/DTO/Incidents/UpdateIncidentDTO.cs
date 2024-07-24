@@ -16,12 +16,6 @@
         public string Priority { set; get; }
 
 
-        public string ActionAssignedTo { set; get; }
-
-
-        public string DeptOfAssignee { set; get; }
-
-
         public string InvestigationDetails { set; get; }
 
 
@@ -43,7 +37,6 @@
         public string IncidentStatus { set; get; }
         public decimal CorrectionDetailsTimeTakenToCloseIncident { set; get; }
         public decimal CorrectiveDetailsTimeTakenToCloseIncident { set; get; }
-        public int EmployeeId { get; set; }
     
 }
 }
