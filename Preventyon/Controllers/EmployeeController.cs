@@ -14,12 +14,10 @@ namespace Preventyon.Controllers
     {
         private  EmployeeRepository _repository;
         private ApiContext _context;
-        private IMapper _mapper;    
-        public EmployeeController(EmployeeRepository _repository, ApiContext _context,IMapper mapper)
+        public EmployeeController(EmployeeRepository _repository, ApiContext _context)
         {
             this._repository = _repository;
             this._context = _context; 
-            this._mapper = mapper;  
         }
 
 

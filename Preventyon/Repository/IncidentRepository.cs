@@ -9,8 +9,6 @@ namespace Preventyon.Repository
 {
     public class IncidentRepository: IIncidentRepository
     {
-
-
         private readonly ApiContext _context;
         private readonly IMapper _mapper;
 
@@ -25,17 +23,18 @@ namespace Preventyon.Repository
             return await _context.Incident.ToListAsync();
         }
 
-        public async Task<IEnumerable<Incident>> GetDraftIncidentsByEmployeeId(int employeeId)
+/*        public async Task<IEnumerable<Incident>> GetDraftIncidentsByEmployeeId(int employeeId)
         {
             return await _context.Incident.Where(i => i.IsDraft && i.EmployeeId == employeeId).ToListAsync();
                
-        }
+        }*/
         public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId)
         {
-           var incidents = await _context.Incident.Where(i => i.EmployeeId == employeeId && i.IsDraft==false).ToListAsync();
-            var privacyIncidents = incidents.Where(i => i.IncidentType.Contains("Privacy Incidents")).ToList();
-            var qualityIncidents = incidents.Where(i => i.IncidentType.Contains("Quality Incidents")).ToList();
-            var securityIncidents = incidents.Where(i => i.IncidentType.Contains("Security Incidents")).ToList();
+            var incidents = await _context.Incident.Where(i => i.EmployeeId == employeeId ).ToListAsync();
+            var privacyIncidents = incidents.Where(i => i.IncidentType == "Privacy Incidents" && i.IsDraft == false).ToList();
+            var qualityIncidents = incidents.Where(i => i.IncidentType == "Quality Incidents" && i.IsDraft == false).ToList();
+            var securityIncidents = incidents.Where(i => i.IncidentType == "Security Incidents" && i.IsDraft == false).ToList();
+
 
             int totalPrivacyIncidents = privacyIncidents.Count;
             int closedPrivacyIncidents = privacyIncidents.Count(i => i.IncidentStatus == "Completed");
@@ -48,7 +47,6 @@ namespace Preventyon.Repository
             int totalSecurityIncidents = securityIncidents.Count;
             int closedSecurityIncidents = securityIncidents.Count(i => i.IncidentStatus == "Completed");
             int pendingSecurityIncidents = totalSecurityIncidents - closedSecurityIncidents;
-        
 
             var incidentStats = new GetIncidentsByEmployeeID
             {
@@ -62,7 +60,7 @@ namespace Preventyon.Repository
                 SecurityTotalIncidents = totalSecurityIncidents,
                 SecurityPendingIncidents = pendingSecurityIncidents,
                 SecurityClosedIncidents = closedSecurityIncidents,
-                Incidents = await _context.Incident.Where(i => i.EmployeeId == employeeId ).ToListAsync()
+                Incidents = _mapper.Map<List<TableFetchIncidentsDto>>(incidents),
             };
 
             return incidentStats;
@@ -89,7 +87,7 @@ namespace Preventyon.Repository
             return incident;
         }
 
-        public async Task<Incident> UserUpdateIncident(Incident incident, CreateIncidentDTO updateIncidentDto)
+        public async Task<Incident> UserUpdateIncident(Incident incident, UpdateIncidentUserDto updateIncidentDto)
         {
             _mapper.Map(updateIncidentDto, incident);
 
@@ -97,14 +95,6 @@ namespace Preventyon.Repository
             await _context.SaveChangesAsync();
             return incident;
         }
-        public async Task DeleteIncident(int id)
-        {
-            var incident = await _context.Incident.FindAsync(id);
-            if (incident != null)
-            {
-                _context.Incident.Remove(incident);
-                await _context.SaveChangesAsync();
-            }
-        }
+
     }
 }

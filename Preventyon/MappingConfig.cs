@@ -19,9 +19,10 @@ namespace Preventyon
             CreateMap<Employee, UpdateEmployeeRoleDTO>().ReverseMap();
             CreateMap<Role, RoleDTO>();
             CreateMap<Permission, PermissionDTO>();
-            CreateMap<UpdateIncidentDTO, Incident>();
+            CreateMap<Incident, UpdateIncidentUserDto>().ReverseMap();
+            CreateMap<Incident, UpdateIncidentDTO>().ReverseMap();
             CreateMap<Admin, CreateAdminDTO>().ReverseMap();
-
+            CreateMap<Incident, TableFetchIncidentsDto>().ReverseMap();
         }
     }
 }

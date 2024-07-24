@@ -35,12 +35,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IncidentRepository>();
 builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped< AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseNpgsql("Host=preventyonserver.postgres.database.azure.com;Database=Preventyon;Username=preventyon;Password=root@2024"));
 var app = builder.Build();
+
 app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
@@ -59,7 +60,6 @@ app.UseStaticFiles(new StaticFileOptions
 ,
     RequestPath = "/images"
 });
-
 
 
 app.MapControllers();

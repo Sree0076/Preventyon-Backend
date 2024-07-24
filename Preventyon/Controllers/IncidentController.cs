@@ -5,6 +5,7 @@ using Preventyon.Models.DTO.Incidents;
 using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
 
+
 namespace Preventyon.Controllers
 {
     [ApiController]
@@ -31,7 +32,7 @@ namespace Preventyon.Controllers
         }
 
 
-
+/*
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -40,12 +41,12 @@ namespace Preventyon.Controllers
             var draftIncidents = await _incidentRepository.GetDraftIncidentsByEmployeeId(employeeId);
             return Ok(draftIncidents);
         }
-
+*/
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<Incident>>> GetIncidentsByEmployeeId(int employeeId)
+        public async Task<ActionResult<IEnumerable<GetIncidentsByEmployeeID>>> GetIncidentsByEmployeeId(int employeeId)
         {
             var Incidents = await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
             return Ok(Incidents);
@@ -57,6 +58,7 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         public async Task<ActionResult<Incident>> GetIncident(int id)
         {
             var incident = await _incidentRepository.GetIncidentById(id);
@@ -76,13 +78,12 @@ namespace Preventyon.Controllers
         public async Task<ActionResult<Incident>> GetUserUpdateIncident(int id)
         {
             var incident = await _incidentRepository.GetIncidentById(id);
-
             if (incident == null)
             {
-                return NotFound();
+                return NotFound("Incident not found");
             }
-            CreateIncidentDTO userUpdateIncident = _mapper.Map<CreateIncidentDTO>(incident);
-            return Ok(userUpdateIncident);
+          
+            return Ok(incident);
         }
 
 
@@ -92,28 +93,25 @@ namespace Preventyon.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<Incident>> CreateIncident([FromForm] CreateIncidentDTO createIncidentDto)
         {
+
             if (createIncidentDto == null)
             {
                 return BadRequest("Incident data is required");
             }
 
-            if (string.IsNullOrEmpty(createIncidentDto.IncidentTitle) || createIncidentDto.IncidentOccuredDate == default || string.IsNullOrEmpty(createIncidentDto.IncidentDescription))
-            {
-                return BadRequest("Title, Incident Occurred Date,Incident Description are required");
-            }
-            createIncidentDto.EmployeeId = 2;//todo
             var employee = await _employeeRepository.GetEmployeeByIdAsync(createIncidentDto.EmployeeId);
             if (employee == null)
             {
-                return BadRequest("invalid employee id");
+                return BadRequest("Invalid employee ID");
             }
+
             try
             {
 
-                List<string> documentUrls = [];
-                if (createIncidentDto.DocumentFiles != null)
+                List<string> documentUrls = new List<string>();
+                if (createIncidentDto.DocumentUrls != null)
                 {
-                    foreach (IFormFile document in createIncidentDto.DocumentFiles)
+                    foreach (IFormFile document in createIncidentDto.DocumentUrls)
                     {
                         var fileName = Guid.NewGuid().ToString() + Path.GetExtension(document.FileName);
                         var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
@@ -127,19 +125,21 @@ namespace Preventyon.Controllers
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
-                            await createIncidentDto.DocumentFiles[0].CopyToAsync(stream);
+
+                            await document.CopyToAsync(stream);
+
                         }
 
                         documentUrls.Add($"/images/{fileName}");
                     }
-
                 }
 
-                DateTime utcDate = createIncidentDto.IncidentOccuredDate.ToUniversalTime();
-                createIncidentDto.IncidentOccuredDate = utcDate;
-                Incident incident = _mapper.Map<Incident>(createIncidentDto);
-                incident.DocumentUrls = documentUrls;
+                createIncidentDto.IncidentOccuredDate = createIncidentDto.IncidentOccuredDate.ToUniversalTime();
+                var incident = _mapper.Map<Incident>(createIncidentDto);
                 incident.ReportedBy = employee.Name;
+                incident.DocumentUrls = documentUrls;
+                incident.IncidentStatus = "pending";
+
                 await _incidentRepository.AddIncident(incident);
 
 
@@ -148,16 +148,17 @@ namespace Preventyon.Controllers
             }
             catch (Exception ex)
             {
-
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }
-
         }
 
+
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        
         public async Task<IActionResult> UpdateIncident(int id, [FromBody] UpdateIncidentDTO updateIncidentDto)
         {
             if (id <= 0)
@@ -178,6 +179,7 @@ namespace Preventyon.Controllers
 
             try
             {
+
                 await _incidentRepository.UpdateIncident(incident, updateIncidentDto);
                 return NoContent();
             }
@@ -191,7 +193,8 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UserUpdateIncident(int id, [FromBody] CreateIncidentDTO createIncidentDto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] UpdateIncidentUserDto createIncidentDto)
         {
             if (id <= 0)
             {
@@ -211,6 +214,30 @@ namespace Preventyon.Controllers
 
             try
             {
+                List<string> documentUrls = new List<string>();
+                if (createIncidentDto.DocumentUrls != null)
+                {
+                    foreach (IFormFile document in createIncidentDto.DocumentUrls)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(document.FileName);
+                        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+
+                        if (!Directory.Exists(uploadPath))
+                        {
+                            Directory.CreateDirectory(uploadPath);
+                        }
+
+                        var filePath = Path.Combine(uploadPath, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await document.CopyToAsync(stream);
+                        }
+
+                        documentUrls.Add($"/images/{fileName}");
+                    }
+                }
+                createIncidentDto.IncidentOccuredDate = DateTime.SpecifyKind(createIncidentDto.IncidentOccuredDate, DateTimeKind.Utc);
                 await _incidentRepository.UserUpdateIncident(incident, createIncidentDto);
                 return NoContent();
             }

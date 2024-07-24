@@ -9,7 +9,7 @@
 
         public Permission Permission { get; set; }
 
-        public ICollection<Employee> Employees { get; set; }
+        /*public ICollection<Employee> Employees { get; set; }*/
 
     }
 }
