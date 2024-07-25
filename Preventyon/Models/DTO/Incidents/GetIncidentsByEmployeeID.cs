@@ -15,6 +15,8 @@ namespace Preventyon.Models.DTO.Incidents
 
         public List<TableFetchIncidentsDto> Incidents { get; set; }
 
+        public List<TableFetchIncidentsDto> AssignedIncidents { get; set; }
+
 
     }
 }

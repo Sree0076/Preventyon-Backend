@@ -4,23 +4,21 @@ using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
 using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
+using Preventyon.Service.IService;
 
 
 namespace Preventyon.Controllers
 {
     [ApiController]
     [Route("[Controller]/[Action]")]
+
     public class IncidentController : ControllerBase
     {
-        private readonly IncidentRepository _incidentRepository;
-        private readonly IEmployeeRepository _employeeRepository;
-        private readonly IMapper _mapper;
+        private readonly IIncidentService _incidentService;
 
-        public IncidentController(IncidentRepository incidentRepository, IEmployeeRepository employeeRepository, IMapper mapper)
+        public IncidentController(IIncidentService incidentService)
         {
-            _incidentRepository = incidentRepository;
-            _employeeRepository = employeeRepository;
-            _mapper = mapper;
+            _incidentService = incidentService;
         }
 
         [HttpGet]
@@ -28,40 +26,26 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<Incident>>> GetIncidents()
         {
-            return Ok(await _incidentRepository.GetAllIncidents());
+            var incidents = await _incidentService.GetAllIncidents();
+            return Ok(incidents);
         }
-
-
-/*
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<Incident>>> GetDraftIncidentsByEmployeeId(int employeeId)
-        {
-            var draftIncidents = await _incidentRepository.GetDraftIncidentsByEmployeeId(employeeId);
-            return Ok(draftIncidents);
-        }
-*/
 
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Incident>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetIncidentsByEmployeeID))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<GetIncidentsByEmployeeID>>> GetIncidentsByEmployeeId(int employeeId)
+        public async Task<ActionResult<GetIncidentsByEmployeeID>> GetIncidentsByEmployeeId(int employeeId)
         {
-            var Incidents = await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
-            return Ok(Incidents);
+            var incidents = await _incidentService.GetIncidentsByEmployeeId(employeeId);
+            return Ok(incidents);
         }
-
-
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-
         public async Task<ActionResult<Incident>> GetIncident(int id)
         {
-            var incident = await _incidentRepository.GetIncidentById(id);
+            var incident = await _incidentService.GetIncidentById(id);
 
             if (incident == null)
             {
@@ -71,94 +55,33 @@ namespace Preventyon.Controllers
             return Ok(incident);
         }
 
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Incident>> GetUserUpdateIncident(int id)
-        {
-            var incident = await _incidentRepository.GetIncidentById(id);
-            if (incident == null)
-            {
-                return NotFound("Incident not found");
-            }
-          
-            return Ok(incident);
-        }
-
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Incident))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<Incident>> CreateIncident([FromForm] CreateIncidentDTO createIncidentDto)
         {
-
             if (createIncidentDto == null)
             {
                 return BadRequest("Incident data is required");
             }
 
-            var employee = await _employeeRepository.GetEmployeeByIdAsync(createIncidentDto.EmployeeId);
-            if (employee == null)
-            {
-                return BadRequest("Invalid employee ID");
-            }
-
             try
             {
-
-                List<string> documentUrls = new List<string>();
-                if (createIncidentDto.DocumentUrls != null)
-                {
-                    foreach (IFormFile document in createIncidentDto.DocumentUrls)
-                    {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(document.FileName);
-                        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
-
-                        if (!Directory.Exists(uploadPath))
-                        {
-                            Directory.CreateDirectory(uploadPath);
-                        }
-
-                        var filePath = Path.Combine(uploadPath, fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-
-                            await document.CopyToAsync(stream);
-
-                        }
-
-                        documentUrls.Add($"/images/{fileName}");
-                    }
-                }
-
-                createIncidentDto.IncidentOccuredDate = createIncidentDto.IncidentOccuredDate.ToUniversalTime();
-                var incident = _mapper.Map<Incident>(createIncidentDto);
-                incident.ReportedBy = employee.Name;
-                incident.DocumentUrls = documentUrls;
-                incident.IncidentStatus = "pending";
-
-                await _incidentRepository.AddIncident(incident);
-
-
-
+                var incident = await _incidentService.CreateIncident(createIncidentDto);
                 return CreatedAtAction(nameof(GetIncident), new { id = incident.Id }, incident);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         public async Task<IActionResult> UpdateIncident(int id, [FromBody] UpdateIncidentDTO updateIncidentDto)
         {
             if (id <= 0)
@@ -171,21 +94,14 @@ namespace Preventyon.Controllers
                 return BadRequest("Incident update data is required");
             }
 
-            var incident = await _incidentRepository.GetIncidentById(id);
-            if (incident == null)
-            {
-                return NotFound();
-            }
-
             try
             {
-
-                await _incidentRepository.UpdateIncident(incident, updateIncidentDto);
+                await _incidentService.UpdateIncident(id, updateIncidentDto);
                 return NoContent();
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(ex.Message);
             }
         }
 
@@ -194,56 +110,26 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] UpdateIncidentUserDto createIncidentDto)
+        public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] UpdateIncidentUserDto updateIncidentDto)
         {
             if (id <= 0)
             {
                 return BadRequest("Invalid incident ID");
             }
 
-            if (createIncidentDto == null)
+            if (updateIncidentDto == null)
             {
                 return BadRequest("Incident update data is required");
             }
 
-            var incident = await _incidentRepository.GetIncidentById(id);
-            if (incident == null)
-            {
-                return NotFound();
-            }
-
             try
             {
-                List<string> documentUrls = new List<string>();
-                if (createIncidentDto.DocumentUrls != null)
-                {
-                    foreach (IFormFile document in createIncidentDto.DocumentUrls)
-                    {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(document.FileName);
-                        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
-
-                        if (!Directory.Exists(uploadPath))
-                        {
-                            Directory.CreateDirectory(uploadPath);
-                        }
-
-                        var filePath = Path.Combine(uploadPath, fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await document.CopyToAsync(stream);
-                        }
-
-                        documentUrls.Add($"/images/{fileName}");
-                    }
-                }
-                createIncidentDto.IncidentOccuredDate = DateTime.SpecifyKind(createIncidentDto.IncidentOccuredDate, DateTimeKind.Utc);
-                await _incidentRepository.UserUpdateIncident(incident, createIncidentDto);
+                await _incidentService.UserUpdateIncident(id, updateIncidentDto);
                 return NoContent();
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(ex.Message);
             }
         }
 

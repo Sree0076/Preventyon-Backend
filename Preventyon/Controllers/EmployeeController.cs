@@ -22,6 +22,10 @@ namespace Preventyon.Controllers
 
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PostEmployee([FromBody] CreateEmployeeDTO employeedto)
         {
 
@@ -40,6 +44,10 @@ namespace Preventyon.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployees()
         {
             List<GetEmployeesDTO> getEmployees = await _repository.GetEmployees();
@@ -49,6 +57,10 @@ namespace Preventyon.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployeeByIdAsync(int id)
         {
             GetEmployeeRoleWithIDDTO employee = await _repository.GetEmployeeByIdAsync(id);

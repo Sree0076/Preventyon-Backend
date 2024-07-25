@@ -32,11 +32,15 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddScoped<IncidentRepository>();
-builder.Services.AddScoped<EmployeeRepository>();
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped< AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IAssignedIncidentRepository, AssignedIncidentRepository>();
+builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped< EmployeeRepository>();
+// Register Services
+builder.Services.AddScoped<IAssignedIncidentService, AssignedIncidentService>();
+builder.Services.AddScoped<IIncidentService, IncidentService>();
 
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseNpgsql("Host=preventyonserver.postgres.database.azure.com;Database=Preventyon;Username=preventyon;Password=root@2024"));
