@@ -83,8 +83,6 @@ namespace Preventyon.Models
             createdAt = DateTime.UtcNow;
         }
        
-
-        public List<string> DocumentUrls { get; set; }
     }
 
 }

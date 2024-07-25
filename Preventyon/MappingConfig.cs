@@ -23,6 +23,7 @@ namespace Preventyon
             CreateMap<Incident, UpdateIncidentDTO>().ReverseMap();
             CreateMap<Admin, CreateAdminDTO>().ReverseMap();
             CreateMap<Incident, TableFetchIncidentsDto>().ReverseMap();
+            CreateMap<AssignedIncidents, TableFetchIncidentsDto>().ReverseMap();
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class TableFetchIncidentsDto
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string IncidentTitle { get; set; }
         public string IncidentType { get; set; }
         public string Category { get; set; }
