@@ -30,8 +30,8 @@ namespace Preventyon.Service
         public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId)
         {
             // Fetch assigned incidents and all incidents for the employee
-        /*    var assignedIncidentsEntities = await _assignedIncidentRepository.GetAssignmentsByEmployeeIdAsync(employeeId);
-            var allIncidentsEntities =;*/
+            /*  var assignedIncidentsEntities = await _assignedIncidentRepository.GetAssignmentsByEmployeeIdAsync(employeeId);
+                var allIncidentsEntities =;*/
             /*            var uniqueIncidentIds = new HashSet<int>();
                         var assignedIncidentTasks = assignedIncidentsEntities
                             .Select(async assignment =>
@@ -51,9 +51,18 @@ namespace Preventyon.Service
                         allIncidentsEntities.AssignedIncidents = _mapper.Map<List<TableFetchIncidentsDto>>(assignedIncidents);
 
                         GetIncidentsByEmployeeID getIncidentsByEmployeeID = allIncidentsEntities;*/
+            var assignments = await _assignedIncidentRepository.GetAssignmentsByEmployeeIdAsync(employeeId);
+            var incidentIds = assignments
+                .Select(a => a.IncidentId)
+                .Distinct()
+                .ToList();
+            var assignedIncidentsEntities = await _assignedIncidentRepository.GetIncidentsByIdsAsync(incidentIds);
 
+            var incidents = await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
 
-            return await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
+            incidents.AssignedIncidents = _mapper.Map<List<TableFetchIncidentsDto>>(assignedIncidentsEntities);
+
+            return incidents;
         }
 
 

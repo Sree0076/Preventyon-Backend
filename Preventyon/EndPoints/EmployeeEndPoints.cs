@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Preventyon.Models.DTO.Employee;
 using Preventyon.Models.DTO.Incidents;
 using Preventyon.Repository.IRepository;
@@ -10,6 +11,9 @@ namespace Preventyon.EndPoints
 {
     public static class EmployeeEndPoints
     {
+
+        private static readonly IIncidentRepository _incidentRepository;
+        private static readonly IMapper _mapper;
         public static void ConfigureEndPoints(this WebApplication app)
         {
             app.MapPut("/api/updateEmployee/{id}", UpdateEmployee)
@@ -23,6 +27,12 @@ namespace Preventyon.EndPoints
             app.MapPut("/api/updateIncidentByReview/{id}", updateIncidentByReview)
                 .WithName("updateIncidentByReview")
                 .Accepts<UpdateIncidentByReviewDto>("application/json")
+                .Produces<APIResponse>(200)
+                .Produces(400)
+                .Produces(404);
+
+            app.MapGet("/api/incidentApproval/{id}", incidentApproval)
+                .WithName("incidentApproval")
                 .Produces<APIResponse>(200)
                 .Produces(400)
                 .Produces(404);
@@ -63,11 +73,39 @@ namespace Preventyon.EndPoints
                 return Results.NotFound(response);
             }
             _mapper.Map(incidentByReviewDto, existingIncident);
-
+            existingIncident.IncidentStatus = "review";
             await incidentRepository.UpdateIncidentAsync(existingIncident);
 
             response.Result = _mapper.Map<UpdateIncidentByReviewDto>(existingIncident);
             response.StatusCode = HttpStatusCode.OK;
+            response.StatusCode = HttpStatusCode.OK;
+            response.isSuccess = true;
+            return Results.Ok(response);
+        }
+
+        private async static Task<IResult> incidentApproval(int id, [FromServices] IIncidentRepository _incidentRepository)
+        {
+            APIResponse response = new APIResponse();
+            var existingIncident = await _incidentRepository.GetIncidentById(id);
+
+            if (existingIncident == null)
+            {
+                response.StatusCode = HttpStatusCode.NotFound;
+                response.isSuccess = false;
+                return Results.NotFound(response);
+            }
+
+            if (existingIncident.IsSubmittedForReview && string.IsNullOrEmpty(existingIncident.Correction))
+            {
+                response.StatusCode = HttpStatusCode.BadRequest;
+                response.isSuccess = false;
+                return Results.BadRequest(response);
+            }
+
+            existingIncident.IncidentStatus = "closed";
+            await _incidentRepository.UpdateIncidentAsync(existingIncident);
+
+            response.Result = existingIncident;
             response.StatusCode = HttpStatusCode.OK;
             response.isSuccess = true;
             return Results.Ok(response);

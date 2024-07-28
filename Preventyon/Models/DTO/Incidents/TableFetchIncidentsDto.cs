@@ -13,6 +13,7 @@
 
         public string IncidentStatus { set; get; }
 
+        public bool IsSubmittedForReview { get; set; }
         public bool IsCorrectionFilled { get; set; }
         public bool IsDraft { get; set; }
     }
