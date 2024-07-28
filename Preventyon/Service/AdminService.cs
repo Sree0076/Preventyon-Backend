@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Preventyon.Data;
 using Preventyon.Models;
 using Preventyon.Models.DTO.AdminDTO;
+using Preventyon.Models.DTO.Employee;
+using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
 using Preventyon.Service.IService;
 
@@ -10,15 +12,21 @@ namespace Preventyon.Service
 {
     public class AdminService : IAdminService
     {
-        private readonly ApiContext _context;
+       
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly IAdminRepository _adminRepository;
 
-        public AdminService(ApiContext context, IEmployeeRepository employeeRepository)
+        public AdminService(ApiContext context, IEmployeeRepository employeeRepository,IAdminRepository adminRepository)
         {
-            _context = context;
+            
             _employeeRepository = employeeRepository;
+            _adminRepository = adminRepository;
+           
         }
-
+        public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
+        {
+            return await _adminRepository.GetAllAdminsAsync();
+        }
         public async Task<Admin> AddAdminAsync(CreateAdminDTO createAdminDTO)
         {
             var existingEmployee = await _employeeRepository.FindAsync(createAdminDTO.EmployeeId);
@@ -54,8 +62,7 @@ namespace Preventyon.Service
                     Status = createAdminDTO.Status,
                 };
 
-                _context.Admins.Add(admin);
-                await _context.SaveChangesAsync();
+               await  _adminRepository.AddAdminAsync(admin);
 
                 return admin;
             }
@@ -70,7 +77,7 @@ namespace Preventyon.Service
 
         public async Task UpdateAdminAsync(int adminId, int? roleId = null, bool? status = null)
         {
-            var admin = await _context.Admins.FindAsync(adminId);
+            var admin = await _adminRepository.GetAdminByIdAsync(adminId);
             if (admin == null)
             {
                 throw new Exception("Admin not found");
@@ -78,13 +85,13 @@ namespace Preventyon.Service
 
             if (roleId.HasValue)
             {
-                var employee = await _context.Employees.FindAsync(admin.EmployeeId);
+                var employee = await _employeeRepository.FindEmployeeAsync(admin.EmployeeId);
                 if (employee == null)
                 {
                     throw new Exception("Employee not found");
                 }
-
-                employee.RoleId = roleId.Value;
+                await _employeeRepository.UpdateAsync(employee);
+               employee.RoleId = roleId.Value;  
             }
 
             if (status.HasValue)
@@ -92,7 +99,7 @@ namespace Preventyon.Service
                 admin.Status = status.Value;
             }
 
-            await _context.SaveChangesAsync();
+            await _adminRepository.UpdateAdminAsync(admin);
         }
 
 

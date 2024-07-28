@@ -16,7 +16,7 @@ namespace Preventyon.Repository
 
         public async Task AddAssignmentAsync(AssignedIncidents assignment)
         {
-            _context.AssignedIncidents.Add(assignment);
+            await _context.AssignedIncidents.AddAsync(assignment);
             await _context.SaveChangesAsync();
         }
 

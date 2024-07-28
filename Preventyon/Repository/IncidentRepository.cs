@@ -23,7 +23,7 @@ namespace Preventyon.Repository
             return await _context.Incident.ToListAsync();
         }
 
-        public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId )
+        public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId)
         {
             var incidents = await _context.Incident
                 .Where(i => i.EmployeeId == employeeId)
@@ -45,6 +45,10 @@ namespace Preventyon.Repository
             int closedSecurityIncidents = securityIncidents.Count(i => i.IncidentStatus == "Completed");
             int pendingSecurityIncidents = totalSecurityIncidents - closedSecurityIncidents;
 
+            foreach (var incident in incidents)
+            {
+                incident.IsCorrectionFilled = (!string.IsNullOrEmpty(incident.Correction)) && (!string.IsNullOrEmpty(incident.CorrectiveAction));
+            }
             var incidentStats = new GetIncidentsByEmployeeID
             {
                 PrivacyTotalIncidents = totalPrivacyIncidents,
@@ -69,7 +73,7 @@ namespace Preventyon.Repository
 
         public async Task<Incident> AddIncident(Incident incident)
         {
-            _context.Incident.Add(incident);
+            await _context.Incident.AddAsync(incident);
             await _context.SaveChangesAsync();
             return incident;
         }
@@ -82,7 +86,7 @@ namespace Preventyon.Repository
             return incident;
         }
 
-        public async Task<Incident> UserUpdateIncident(Incident incident, UpdateIncidentUserDto updateIncidentDto)
+        public async Task<Incident> UserUpdateIncident(Incident incident, CreateIncidentDTO updateIncidentDto)
         {
             _mapper.Map(updateIncidentDto, incident);
             _context.Entry(incident).State = EntityState.Modified;
@@ -92,10 +96,79 @@ namespace Preventyon.Repository
 
         public async Task<Incident> UpdateIncidentAsync(Incident incident)
         {
-           
+
             _context.Entry(incident).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return incident;
         }
+
+        public async Task<GetIncidentsByEmployeeID> GetAllIncidentsWithBarChart()
+        {
+            var incidents = await _context.Incident
+                          .Where(i => i.IsDraft == false)
+                          .ToListAsync();
+
+            var privacyIncidents = incidents.Where(i => i.IncidentType == "Privacy Incidents" ).ToList();
+            var qualityIncidents = incidents.Where(i => i.IncidentType == "Quality Incidents" ).ToList();
+            var securityIncidents = incidents.Where(i => i.IncidentType == "Security Incidents").ToList();
+
+            int totalPrivacyIncidents = privacyIncidents.Count;
+            int closedPrivacyIncidents = privacyIncidents.Count(i => i.IncidentStatus == "Completed");
+            int pendingPrivacyIncidents = totalPrivacyIncidents - closedPrivacyIncidents;
+
+            int totalQualityIncidents = qualityIncidents.Count;
+            int closedQualityIncidents = qualityIncidents.Count(i => i.IncidentStatus == "Completed");
+            int pendingQualityIncidents = totalQualityIncidents - closedQualityIncidents;
+
+            int totalSecurityIncidents = securityIncidents.Count;
+            int closedSecurityIncidents = securityIncidents.Count(i => i.IncidentStatus == "Completed");
+            int pendingSecurityIncidents = totalSecurityIncidents - closedSecurityIncidents;
+
+            foreach (var incident in incidents)
+            {
+                incident.IsCorrectionFilled = (!string.IsNullOrEmpty(incident.Correction)) && (!string.IsNullOrEmpty(incident.CorrectiveAction));
+            }
+                        var fiveYearsAgo = DateTime.Now.AddYears(-5);
+            var filteredIncidents = incidents.Where(i => i.IncidentOccuredDate >= fiveYearsAgo).ToList();
+
+            var groupedIncidents = filteredIncidents
+                .GroupBy(i => new { Year = i.IncidentOccuredDate.Year, Type = i.IncidentType })
+                .Select(g => new
+                {
+                    Year = g.Key.Year,
+                    Type = g.Key.Type,
+                    Count = g.Count()
+                })
+                .OrderBy(g => g.Year)
+                .ToList();
+
+            var yearlyIncidentCounts = groupedIncidents
+            .GroupBy(g => g.Year)
+            .ToDictionary(
+                g => g.Key,
+                g => g.ToDictionary(
+                x => x.Type,
+                x => x.Count)
+            );
+            var incidentStats = new GetIncidentsByEmployeeID
+            {
+                PrivacyTotalIncidents = totalPrivacyIncidents,
+                PrivacyPendingIncidents = pendingPrivacyIncidents,
+                PrivacyClosedIncidents = closedPrivacyIncidents,
+                QualityTotalIncidents = totalQualityIncidents,
+                QualityPendingIncidents = pendingQualityIncidents,
+                QualityClosedIncidents = closedQualityIncidents,
+                SecurityTotalIncidents = totalSecurityIncidents,
+                SecurityPendingIncidents = pendingSecurityIncidents,
+                SecurityClosedIncidents = closedSecurityIncidents,
+                Incidents = _mapper.Map<List<TableFetchIncidentsDto>>(incidents),
+                YearlyIncidentCounts = yearlyIncidentCounts,
+            };
+
+            return incidentStats;
+        }
+
+    
+
     }
 }

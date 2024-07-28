@@ -4,6 +4,7 @@ namespace Preventyon.Models
 {
     public class Admin
     {
+        // chnage to Id
         public int AdminId { get; set; }
 
         public int EmployeeId { get; set; }

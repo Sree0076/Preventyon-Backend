@@ -1,25 +1,24 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Preventyon.Data;
-using Preventyon.Repository;
-using System.Text.Json;
-using Preventyon.Models.DTO.Employee;
 using Preventyon.Models;
+using Preventyon.Models.DTO.Employee;
+using Preventyon.Service.IService;
 
 namespace Preventyon.Controllers
 {
     [ApiController]
-    [Route("[Controller]/[Action]")]
+    [Route("api/[Controller]/[Action]")] 
     public class EmployeeController : ControllerBase
     {
-        private  EmployeeRepository _repository;
-        private ApiContext _context;
-        public EmployeeController(EmployeeRepository _repository, ApiContext _context)
-        {
-            this._repository = _repository;
-            this._context = _context; 
-        }
+        private readonly IEmployeeService _service;
+        private readonly ApiContext _context;
 
+        public EmployeeController(IEmployeeService service, ApiContext context)
+        {
+            _service = service;
+            _context = context;
+        }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -28,17 +27,13 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PostEmployee([FromBody] CreateEmployeeDTO employeedto)
         {
-
             try
             {
-
-                Employee employee = await _repository.AddEmployee(employeedto);
-
+                Employee employee = await _service.AddEmployee(employeedto);
                 return Ok(employee);
             }
             catch (Exception ex)
             {
-
                 return BadRequest(ex);
             }
         }
@@ -50,10 +45,15 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployees()
         {
-            List<GetEmployeesDTO> getEmployees = await _repository.GetEmployees();
-
-            return Ok(getEmployees);
-
+            try
+            {
+                List<GetEmployeesDTO> getEmployees = await _service.GetEmployees();
+                return Ok(getEmployees);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         [HttpGet("{id}")]
@@ -63,20 +63,47 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployeeByIdAsync(int id)
         {
-            GetEmployeeRoleWithIDDTO employee = await _repository.GetEmployeeByIdAsync(id);
-            return Ok(employee);
+            try
+            {
+                GetEmployeeRoleWithIDDTO employee = await _service.GetEmployeeByIdAsync(id);
+                return Ok(employee);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
-/*        [HttpGet("{id}")]
-        public async Task<IActionResult> GetEmployeeWithIncidents(int id)
+        [HttpGet("getUserRole")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetEmployeeByTokenAsync()
         {
-            Employee employee = await _repository.GetEmployeeWithIncidents(id);
-           
-            if (employee == null)
+            var jwtStream = Request.Headers["Authorization"].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(jwtStream))
+                return BadRequest("Authorization header missing or invalid");
+
+            try
             {
-                return NotFound();
+                var employee = await _service.GetEmployeeByTokenAsync(jwtStream, _context);
+                return Ok(employee);
             }
-            return Ok(employee);
-        }*/
+            catch (SecurityTokenException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
     }
 }

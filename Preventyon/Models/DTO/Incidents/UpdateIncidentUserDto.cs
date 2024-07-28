@@ -11,6 +11,6 @@
         public string Priority { get; set; }
         public bool IsDraft { get; set; }
 
-        public List<IFormFile> DocumentUrls { get; set; }
+        public List<string> DocumentUrls { get; set; }
     }
 }

@@ -32,7 +32,7 @@ namespace Preventyon.Repository
 
         public async Task AddAdminAsync(Admin admin)
         {
-            _context.Admins.Add(admin);
+           await  _context.Admins.AddAsync(admin);
             await _context.SaveChangesAsync();
         }
 
@@ -42,7 +42,7 @@ namespace Preventyon.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAdminAsync(Guid id)
+        public async Task DeleteAdminAsync(int id)
         {
             var admin = await _context.Admins.FindAsync(id);
             if (admin != null)
@@ -52,9 +52,5 @@ namespace Preventyon.Repository
             }
         }
 
-        Task IAdminRepository.DeleteAdminAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
