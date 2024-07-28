@@ -18,5 +18,7 @@ namespace Preventyon.Models.DTO.Incidents
         public List<TableFetchIncidentsDto> AssignedIncidents { get; set; }
 
 
+        public Dictionary<int, Dictionary<string, int>> YearlyIncidentCounts { get; set; }
+
     }
 }

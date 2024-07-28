@@ -3,6 +3,7 @@
     public class Permission
     {
         public int Id { get; set; }
+        //change to name
         public string PermissionName { get; set; }
 
         public bool IncidentManagement { get; set; }

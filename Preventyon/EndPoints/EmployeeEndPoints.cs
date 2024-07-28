@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Preventyon.Models.DTO.Employee;
+using Preventyon.Models.DTO.Incidents;
 using Preventyon.Repository.IRepository;
 using RequestDemoMinimal.models;
 using System.Net;
@@ -14,6 +15,14 @@ namespace Preventyon.EndPoints
             app.MapPut("/api/updateEmployee/{id}", UpdateEmployee)
                 .WithName("UpdateEmployee")
                 .Accepts<UpdateEmployeeRoleDTO>("application/json")
+                .Produces<APIResponse>(200)
+                .Produces(400)
+                .Produces(404);
+
+
+            app.MapPut("/api/updateIncidentByReview/{id}", updateIncidentByReview)
+                .WithName("updateIncidentByReview")
+                .Accepts<UpdateIncidentByReviewDto>("application/json")
                 .Produces<APIResponse>(200)
                 .Produces(400)
                 .Produces(404);
@@ -34,6 +43,30 @@ namespace Preventyon.EndPoints
             await _employeeRepo.UpdateAsync(existingEmployee);
 
             response.Result = _mapper.Map<UpdateEmployeeRoleDTO>(existingEmployee);
+            response.StatusCode = HttpStatusCode.OK;
+            response.StatusCode = HttpStatusCode.OK;
+            response.isSuccess = true;
+            return Results.Ok(response);
+        }
+
+
+
+        private async static Task<IResult> updateIncidentByReview(int id, [FromBody] UpdateIncidentByReviewDto incidentByReviewDto, IMapper _mapper, IIncidentRepository incidentRepository)
+        {
+            APIResponse response = new APIResponse();
+            var existingIncident = await incidentRepository.GetIncidentById(id);
+
+            if (existingIncident == null)
+            {
+                response.StatusCode = HttpStatusCode.NotFound;
+                response.isSuccess = false;
+                return Results.NotFound(response);
+            }
+            _mapper.Map(incidentByReviewDto, existingIncident);
+
+            await incidentRepository.UpdateIncidentAsync(existingIncident);
+
+            response.Result = _mapper.Map<UpdateIncidentByReviewDto>(existingIncident);
             response.StatusCode = HttpStatusCode.OK;
             response.StatusCode = HttpStatusCode.OK;
             response.isSuccess = true;

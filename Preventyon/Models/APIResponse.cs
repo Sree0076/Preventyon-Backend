@@ -12,6 +12,7 @@ namespace RequestDemoMinimal.models
 
         }
 
+        // change to pascal case
         public bool isSuccess { get; set; }
         public Object Result { get; set; }
         public HttpStatusCode StatusCode { get; set; }

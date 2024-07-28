@@ -10,9 +10,10 @@ namespace Preventyon.Repository.IRepository
         Task<Incident> GetIncidentById(int id);
         Task<Incident> AddIncident(Incident incident);
         Task<Incident> UpdateIncident(Incident incident, UpdateIncidentDTO updateIncidentDto);
-        Task<Incident> UserUpdateIncident(Incident incident, UpdateIncidentUserDto updateIncidentDto);
+        Task<Incident> UserUpdateIncident(Incident incident, CreateIncidentDTO updateIncidentDto);
 
         Task<Incident> UpdateIncidentAsync(Incident incident);
-        
-        }
+
+        Task<GetIncidentsByEmployeeID> GetAllIncidentsWithBarChart();
+    }
 }

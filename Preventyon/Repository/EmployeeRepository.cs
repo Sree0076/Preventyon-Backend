@@ -20,7 +20,7 @@ namespace Preventyon.Repository
         private readonly IMapper _mapper;
         public EmployeeRepository(ApiContext context, IMapper mapper)
         {
-            this._context = context;
+            _context = context;
             _mapper = mapper;
            
         }
@@ -28,7 +28,7 @@ namespace Preventyon.Repository
         public async Task<Employee> AddEmployee(CreateEmployeeDTO employeedto)
         {
             Employee employee = _mapper.Map<Employee>(employeedto);
-            _context.Employees.Add(employee);
+            await _context.Employees.AddAsync(employee);
             await _context.SaveChangesAsync();
             return employee;
         }
@@ -37,6 +37,15 @@ namespace Preventyon.Repository
         {
             var employees = await _context.Employees.ToListAsync();
             return _mapper.Map<List<GetEmployeesDTO>>(employees);
+        }
+
+        public async Task<Employee> FindEmployeeAsync(int id)
+        {
+
+            var employee = await _context.Employees
+             .FirstOrDefaultAsync(e => e.Id == id);
+
+            return employee;
         }
         public async Task<GetEmployeeRoleWithIDDTO> GetEmployeeByIdAsync(int id)
         {

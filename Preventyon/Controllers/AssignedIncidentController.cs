@@ -11,7 +11,7 @@ using Preventyon.Service.IService;
 
 namespace Preventyon.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[Action]")]
     [ApiController]
     public class AssignedIncidentController : ControllerBase
     {
@@ -42,6 +42,7 @@ namespace Preventyon.Controllers
         [HttpGet("{employeeId}")]
         public async Task<IActionResult> GetAssignedIncidentsForEmployee(int employeeId)
         {
+           /* null check*/
             var incidents = await _assignedIncidentService.GetAssignedIncidentsForEmployeeAsync(employeeId);
             return Ok(incidents);
         }

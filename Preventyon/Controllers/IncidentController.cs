@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
@@ -9,16 +10,19 @@ using Preventyon.Service.IService;
 
 namespace Preventyon.Controllers
 {
+ 
     [ApiController]
-    [Route("[Controller]/[Action]")]
+    [Route("api/[Controller]/[Action]")]
 
     public class IncidentController : ControllerBase
     {
         private readonly IIncidentService _incidentService;
+        private readonly IEmployeeService _employeeService;
 
-        public IncidentController(IIncidentService incidentService)
+        public IncidentController(IIncidentService incidentService, IEmployeeService employeeService)
         {
             _incidentService = incidentService;
+            _employeeService = employeeService;
         }
 
         [HttpGet]
@@ -29,12 +33,18 @@ namespace Preventyon.Controllers
             var incidents = await _incidentService.GetAllIncidents();
             return Ok(incidents);
         }
-
+   
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetIncidentsByEmployeeID))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GetIncidentsByEmployeeID>> GetIncidentsByEmployeeId(int employeeId)
+        public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId)
         {
+            var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+            if (employee.Role.Name == "SuperAdmin")
+            {
+                var Adminincidents = await _incidentService.GetIncidentsAdmins();
+                return Ok(Adminincidents);
+            }
             var incidents = await _incidentService.GetIncidentsByEmployeeId(employeeId);
             return Ok(incidents);
         }
@@ -110,7 +120,7 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] UpdateIncidentUserDto updateIncidentDto)
+        public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] CreateIncidentDTO updateIncidentDto)
         {
             if (id <= 0)
             {
@@ -131,6 +141,30 @@ namespace Preventyon.Controllers
             {
                 return NotFound(ex.Message);
             }
+        }
+
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<UpdateIncidentUserDto>> GetUserUpdateIncident(int id)
+        {
+            var incident = await _incidentService.GetUserUpdateIncident(id);
+            
+            if (incident == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(incident);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAdminIncidentsWithBarChart()
+        {
+            var result = await _incidentService.GetIncidentsAdmins();
+            return Ok(result); // Automatically serializes the DTO to JSON
         }
 
     }
