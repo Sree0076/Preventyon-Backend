@@ -4,5 +4,7 @@
     {
         public int Id { get; set; }
         public bool IsSubmittedForReview { get; set; }
+
+       
     }
 }
