@@ -6,10 +6,12 @@ using Microsoft.OpenApi.Models;
 using Preventyon;
 using Preventyon.Data;
 using Preventyon.EndPoints;
+using Preventyon.Models;
 using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
 using Preventyon.Service;
 using Preventyon.Service.IService;
+using System.Net.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +68,23 @@ builder.Services.AddScoped< EmployeeRepository>();
 builder.Services.AddScoped<IAssignedIncidentService, AssignedIncidentService>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
 builder.Services.AddScoped<IEmployeeService,EmployeeService>();
+builder.Services.AddScoped <IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailRepository,EmailRepository>();
+
+var smtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
+builder.Services.AddFluentEmail(smtpSettings.FromEmail, smtpSettings.FromName)
+.AddRazorRenderer()
+.AddSmtpSender(new SmtpClient(smtpSettings.Host)
+{
+    Port = smtpSettings.Port,
+    Credentials = new System.Net.NetworkCredential(smtpSettings.UserName, smtpSettings.Password),
+    EnableSsl = true,
+    DeliveryMethod = SmtpDeliveryMethod.Network,
+    UseDefaultCredentials = false,
+});
+
+
+
 
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseNpgsql("Host=preventyonserver.postgres.database.azure.com;Database=Preventyon;Username=preventyon;Password=root@2024"));
