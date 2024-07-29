@@ -34,18 +34,20 @@ namespace Preventyon.Repository
             var securityIncidents = incidents.Where(i => i.IncidentType == "Security Incidents" && !i.IsDraft).ToList();
 
             int totalPrivacyIncidents = privacyIncidents.Count;
-            int closedPrivacyIncidents = privacyIncidents.Count(i => i.IncidentStatus == "Completed");
+            int closedPrivacyIncidents = privacyIncidents.Count(i => i.IncidentStatus == "closed");
             int pendingPrivacyIncidents = totalPrivacyIncidents - closedPrivacyIncidents;
 
             int totalQualityIncidents = qualityIncidents.Count;
-            int closedQualityIncidents = qualityIncidents.Count(i => i.IncidentStatus == "Completed");
+            int closedQualityIncidents = qualityIncidents.Count(i => i.IncidentStatus == "closed");
             int pendingQualityIncidents = totalQualityIncidents - closedQualityIncidents;
 
             int totalSecurityIncidents = securityIncidents.Count;
-            int closedSecurityIncidents = securityIncidents.Count(i => i.IncidentStatus == "Completed");
+            int closedSecurityIncidents = securityIncidents.Count(i => i.IncidentStatus == "closed");
             int pendingSecurityIncidents = totalSecurityIncidents - closedSecurityIncidents;
-
-            foreach (var incident in incidents)
+            var allincidents = await _context.Incident
+                            .Where(i => i.IsDraft == false)
+                            .ToListAsync();
+            foreach (var incident in allincidents)
             {
                 incident.IsCorrectionFilled = (!string.IsNullOrEmpty(incident.Correction)) && (!string.IsNullOrEmpty(incident.CorrectiveAction));
             }
@@ -113,15 +115,15 @@ namespace Preventyon.Repository
             var securityIncidents = incidents.Where(i => i.IncidentType == "Security Incidents").ToList();
 
             int totalPrivacyIncidents = privacyIncidents.Count;
-            int closedPrivacyIncidents = privacyIncidents.Count(i => i.IncidentStatus == "Completed");
+            int closedPrivacyIncidents = privacyIncidents.Count(i => i.IncidentStatus == "closed");
             int pendingPrivacyIncidents = totalPrivacyIncidents - closedPrivacyIncidents;
 
             int totalQualityIncidents = qualityIncidents.Count;
-            int closedQualityIncidents = qualityIncidents.Count(i => i.IncidentStatus == "Completed");
+            int closedQualityIncidents = qualityIncidents.Count(i => i.IncidentStatus == "closed");
             int pendingQualityIncidents = totalQualityIncidents - closedQualityIncidents;
 
             int totalSecurityIncidents = securityIncidents.Count;
-            int closedSecurityIncidents = securityIncidents.Count(i => i.IncidentStatus == "Completed");
+            int closedSecurityIncidents = securityIncidents.Count(i => i.IncidentStatus == "closed");
             int pendingSecurityIncidents = totalSecurityIncidents - closedSecurityIncidents;
 
             foreach (var incident in incidents)

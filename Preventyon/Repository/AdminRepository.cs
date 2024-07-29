@@ -26,7 +26,8 @@ namespace Preventyon.Repository
         {
             return await _context.Admins
                 .Include(a => a.Employee)
-                .ThenInclude(e => e.Role)
+                    .ThenInclude(e => e.Role)
+                        .ThenInclude(r => r.Permission)
                 .ToListAsync();
         }
 

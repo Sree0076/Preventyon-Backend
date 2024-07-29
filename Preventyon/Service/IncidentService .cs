@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Preventyon.Models.DTO.Incidents;
 using Preventyon.Models;
+using Microsoft.EntityFrameworkCore;
 using Preventyon.Repository.IRepository;
 using Preventyon.Service.IService;
 
@@ -104,12 +105,16 @@ namespace Preventyon.Service
                 }
             }
 
-            // createIncidentDto.IncidentOccuredDate = createIncidentDto.IncidentOccuredDate.ToUniversalTime();
+             createIncidentDto.IncidentOccuredDate = createIncidentDto.IncidentOccuredDate.ToUniversalTime();
             var incident = _mapper.Map<Incident>(createIncidentDto);
             incident.ReportedBy = employee.Name;
             incident.RoleOfReporter = employee.Designation;
             incident.DocumentUrls = documentUrls;
-            if(createIncidentDto.IsDraft)
+
+/*            var lastEntity = await _incidentRepository.GetAllIncidents()
+                                     .OrderByDescending(e => e.Id)
+                                     .FirstOrDefault();*/
+            if (createIncidentDto.IsDraft)
             {
                 incident.IncidentStatus = "draft";
             }
@@ -131,6 +136,7 @@ namespace Preventyon.Service
             {
                 throw new ArgumentException("Invalid incident ID");
             }
+
             await _incidentRepository.UpdateIncident(incident, updateIncidentDto);
         }
 

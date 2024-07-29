@@ -18,11 +18,13 @@ namespace Preventyon.Controllers
     {
         private readonly IIncidentService _incidentService;
         private readonly IEmployeeService _employeeService;
+        private readonly IEmailService _emailService;
 
-        public IncidentController(IIncidentService incidentService, IEmployeeService employeeService)
+        public IncidentController(IIncidentService incidentService, IEmployeeService employeeService, IEmailService emailService)
         {
             _incidentService = incidentService;
             _employeeService = employeeService;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -79,7 +81,14 @@ namespace Preventyon.Controllers
             try
             {
                 var incident = await _incidentService.CreateIncident(createIncidentDto);
-                return CreatedAtAction(nameof(GetIncident), new { id = incident.Id }, incident);
+                var emailResult = await _emailService.SendNotificationAsync(createIncidentDto.EmployeeId, incident);
+
+                if(emailResult)
+                {
+                    return CreatedAtAction(nameof(GetIncident), new { id = incident.Id }, incident);
+                }
+
+                return BadRequest("Email Not Send");
             }
             catch (ArgumentException ex)
             {
