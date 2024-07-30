@@ -43,7 +43,7 @@ namespace Preventyon.Controllers
         public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-            if (employee.Role.Name == "SuperAdmin")
+            if (employee.Role.Name == "SuperAdmin" || employee.Role.Name == "Admins-User" || employee.Role.Name == "Admin-Incidents")
             {
                 var Adminincidents = await _incidentService.GetIncidentsAdmins();
                 return Ok(Adminincidents);

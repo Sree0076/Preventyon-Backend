@@ -4,6 +4,7 @@ using Preventyon.Data;
 using Preventyon.Models;
 using Preventyon.Models.DTO.AdminDTO;
 using Preventyon.Repository.IRepository;
+using System.Linq;
 
 namespace Preventyon.Repository
 {
@@ -26,26 +27,61 @@ namespace Preventyon.Repository
                 .FirstOrDefaultAsync(a => a.AdminId == id);
         }
 
-       public async Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync()
+       public async Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync(int employeeId)
         {
+            var employeesNotInAdminIds = _context.Employees
+                .Where(e => e.RoleId == 1 &&
+                            !_context.Admins.Select(a => a.EmployeeId).Contains(e.Id))
+                .Select(e => e.Id)
+                .ToList();
 
+            bool employeeExists = employeesNotInAdminIds.Any(e => e == employeeId);
 
-            var admins = await _context.Admins
-                               .Include(a => a.Employee)
-                               .ThenInclude(e => e.Role)
-                               .ThenInclude(r => r.Permission)
-                               .ToListAsync();
-
-            return admins.Select(a => new GetAllAdminsDto
+            if (employeeExists)
             {
-                AdminId = a.AdminId,
-                EmployeeName = a.Employee.Name,
-                AssignedOn = a.AssignedOn,
-                AssignedBy = _context.Employees.FindAsync(a.AssignedBy).Result.Name, 
-                isIncidentMangenet = a.Employee.Role.Permission.IncidentManagement,
-                isUserMangenet = a.Employee.Role.Permission.UserManagement,
-                Status = a.Status
-            }).ToList();
+
+                var admins = await _context.Admins
+                                      .Include(a => a.Employee)
+                                      .ThenInclude(e => e.Role)
+                                      .ThenInclude(r => r.Permission)
+                                      .ToListAsync();
+
+
+                return admins.Select(a => new GetAllAdminsDto
+                {
+                    AdminId = a.AdminId,
+                    EmployeeName = a.Employee.Name,
+                    AssignedOn = a.AssignedOn,
+                    AssignedBy = _context.Employees.FindAsync(a.AssignedBy).Result.Name,
+                    isIncidentMangenet = a.Employee.Role.Permission.IncidentManagement,
+                    isUserMangenet = a.Employee.Role.Permission.UserManagement,
+                    Status = a.Status
+                }).ToList();
+            }
+            else
+            {
+
+                var admins = await _context.Admins
+                    .Where(a => !employeesNotInAdminIds.Contains(a.AssignedBy))
+                    .Include(a => a.Employee) // Include related Employee data
+                    .ThenInclude(e => e.Role)
+                    .ThenInclude(r => r.Permission)
+                    .ToListAsync();
+
+                return admins.Select(a => new GetAllAdminsDto
+                {
+                    AdminId = a.AdminId,
+                    EmployeeName = a.Employee.Name,
+                    AssignedOn = a.AssignedOn,
+                    AssignedBy = _context.Employees.FindAsync(a.AssignedBy).Result.Name,
+                    isIncidentMangenet = a.Employee.Role.Permission.IncidentManagement,
+                    isUserMangenet = a.Employee.Role.Permission.UserManagement,
+                    Status = a.Status
+                }).ToList();
+            }
+
+
+
 
   
         }
