@@ -1,5 +1,5 @@
-﻿using Preventyon.Models.DTO.Incidents;
-using Preventyon.Models;
+﻿using Preventyon.Models;
+using Preventyon.Models.DTO.Incidents;
 
 namespace Preventyon.Service.IService
 {
@@ -10,9 +10,9 @@ namespace Preventyon.Service.IService
         Task<Incident> GetIncidentById(int id);
         Task<Incident> CreateIncident(CreateIncidentDTO createIncidentDto);
         Task UpdateIncident(int id, UpdateIncidentDTO updateIncidentDto);
-        Task UserUpdateIncident(int id, CreateIncidentDTO updateIncidentDto);
+        Task UserUpdateIncident(int id, UpdateIncidentUserDto updateIncidentDto);
 
-        Task<UpdateIncidentUserDto> GetUserUpdateIncident(int id);
+        Task<GetUserUpdateIncidentDTO> GetUserUpdateIncident(int id);
 
         Task<GetIncidentsByEmployeeID> GetIncidentsAdmins();
     }
