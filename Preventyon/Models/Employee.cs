@@ -35,7 +35,7 @@ namespace Preventyon.Models
         public DateTime UpdatedAt { get; set; }
         public ICollection<Incident> Incident { get; set; }
 
-    /*    public Admin Admin { get; set; }*/
+        public Admin Admin { get; set; }
         public Employee()
         {
             CreatedAt= DateTime.Now;

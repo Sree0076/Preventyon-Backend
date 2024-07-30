@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Preventyon.Data;
 using Preventyon.Models;
+using Preventyon.Models.DTO.AdminDTO;
 using Preventyon.Repository.IRepository;
 
 namespace Preventyon.Repository
@@ -8,10 +10,12 @@ namespace Preventyon.Repository
     public class AdminRepository : IAdminRepository
     {
         private readonly ApiContext _context;
+        private readonly IMapper _mapper;
 
-        public AdminRepository(ApiContext context)
+        public AdminRepository(ApiContext context , IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<Admin> GetAdminByIdAsync(int id)
@@ -22,13 +26,28 @@ namespace Preventyon.Repository
                 .FirstOrDefaultAsync(a => a.AdminId == id);
         }
 
-        public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
+       public async Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync()
         {
-            return await _context.Admins
-                .Include(a => a.Employee)
-                    .ThenInclude(e => e.Role)
-                        .ThenInclude(r => r.Permission)
-                .ToListAsync();
+
+
+            var admins = await _context.Admins
+                               .Include(a => a.Employee)
+                               .ThenInclude(e => e.Role)
+                               .ThenInclude(r => r.Permission)
+                               .ToListAsync();
+
+            return admins.Select(a => new GetAllAdminsDto
+            {
+                AdminId = a.AdminId,
+                EmployeeName = a.Employee.Name,
+                AssignedOn = a.AssignedOn,
+                AssignedBy = _context.Employees.FindAsync(a.AssignedBy).Result.Name, 
+                isIncidentMangenet = a.Employee.Role.Permission.IncidentManagement,
+                isUserMangenet = a.Employee.Role.Permission.UserManagement,
+                Status = a.Status
+            }).ToList();
+
+  
         }
 
         public async Task AddAdminAsync(Admin admin)

@@ -1,11 +1,12 @@
 ﻿using Preventyon.Models;
+using Preventyon.Models.DTO.AdminDTO;
 
 namespace Preventyon.Repository.IRepository
 {
     public interface IAdminRepository
     {
         Task<Admin> GetAdminByIdAsync(int id);
-        Task<IEnumerable<Admin>> GetAllAdminsAsync();
+        Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync();
         Task AddAdminAsync(Admin admin);
         Task UpdateAdminAsync(Admin admin);
         Task DeleteAdminAsync(int id);
