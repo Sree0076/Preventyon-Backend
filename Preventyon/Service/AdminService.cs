@@ -23,9 +23,9 @@ namespace Preventyon.Service
             _adminRepository = adminRepository;
            
         }
-        public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
+        public async Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync(int Id)
         {
-            return await _adminRepository.GetAllAdminsAsync();
+            return await _adminRepository.GetAllAdminsAsync(Id);
         }
         public async Task<Admin> AddAdminAsync(CreateAdminDTO createAdminDTO)
         {
@@ -43,15 +43,15 @@ namespace Preventyon.Service
                 }
                 else if(createAdminDTO.isIncidentMangenet == true && createAdminDTO.isUserMangenet == false)
                 {
-                    existingEmployee.RoleId = 3;
+                    existingEmployee.RoleId = 2;
                 }
                 else if (createAdminDTO.isIncidentMangenet == false && createAdminDTO.isUserMangenet == true)
                 {
-                    existingEmployee.RoleId = 4;
+                    existingEmployee.RoleId = 3;
                 }
                 else 
                 {
-                    existingEmployee.RoleId = 5;
+                    existingEmployee.RoleId = 4;
                 }
                 await _employeeRepository.UpdateAsync(existingEmployee);
 
@@ -75,29 +75,44 @@ namespace Preventyon.Service
         }
 
 
-        public async Task UpdateAdminAsync(int adminId, int? roleId = null, bool? status = null)
+        public async Task UpdateAdminAsync(UpdateAdminDTO updateAdmin)
         {
-            var admin = await _adminRepository.GetAdminByIdAsync(adminId);
+            var admin = await _adminRepository.GetAdminByIdAsync(updateAdmin.AdminId);
             if (admin == null)
             {
                 throw new Exception("Admin not found");
             }
-
-            if (roleId.HasValue)
+            var employee = await _employeeRepository.FindEmployeeAsync(admin.EmployeeId);
+            if (employee == null)
             {
-                var employee = await _employeeRepository.FindEmployeeAsync(admin.EmployeeId);
-                if (employee == null)
-                {
-                    throw new Exception("Employee not found");
-                }
+                throw new Exception("Employee not found");
+            }
+            if (updateAdmin.isIncidentMangenet == true && updateAdmin.isUserMangenet == true)
+            {
+                employee.RoleId = 1;
+            }
+            else if (updateAdmin.isIncidentMangenet == true && updateAdmin.isUserMangenet == false)
+            {
+                employee.RoleId = 2;
+            }
+            else if (updateAdmin.isIncidentMangenet == false && updateAdmin.isUserMangenet == true)
+            {
+                employee.RoleId = 3;
+            }
+            else
+            {
+                employee.RoleId = 4;
+            }
+            if(!updateAdmin.Status)
+            {
+                employee.RoleId = 4;
+            }
+  
                 await _employeeRepository.UpdateAsync(employee);
-               employee.RoleId = roleId.Value;  
-            }
 
-            if (status.HasValue)
-            {
-                admin.Status = status.Value;
-            }
+ 
+                admin.Status = updateAdmin.Status;
+            
 
             await _adminRepository.UpdateAdminAsync(admin);
         }

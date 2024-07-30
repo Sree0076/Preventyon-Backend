@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
@@ -23,35 +24,21 @@ namespace Preventyon.Service
         }
 
         public async Task<IEnumerable<Incident>> GetAllIncidents()
-        {/*
-             null check*/
-            return await _incidentRepository.GetAllIncidents();
+        {
+            try
+            {
+                var incidents = await _incidentRepository.GetAllIncidents();
+                return incidents ?? Enumerable.Empty<Incident>();
+            }
+            catch (Exception)
+            {
+                return Enumerable.Empty<Incident>();
+            }
         }
 
         public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId)
         {
-            // Fetch assigned incidents and all incidents for the employee
-            /*  var assignedIncidentsEntities = await _assignedIncidentRepository.GetAssignmentsByEmployeeIdAsync(employeeId);
-                var allIncidentsEntities =;*/
-            /*            var uniqueIncidentIds = new HashSet<int>();
-                        var assignedIncidentTasks = assignedIncidentsEntities
-                            .Select(async assignment =>
-                            {
-                                if (uniqueIncidentIds.Add(assignment.IncidentId))
-                                {
-                                    return await _incidentRepository.GetIncidentById(assignment.IncidentId);
-                                }
-                                return null;
-                            })
-                            .ToList();
-
-                        var assignedIncidents = (await Task.WhenAll(assignedIncidentTasks))
-                            .Where(incident => incident != null)
-                            .ToList();
-
-                        allIncidentsEntities.AssignedIncidents = _mapper.Map<List<TableFetchIncidentsDto>>(assignedIncidents);
-
-                        GetIncidentsByEmployeeID getIncidentsByEmployeeID = allIncidentsEntities;*/
+          
             var assignments = await _assignedIncidentRepository.GetAssignmentsByEmployeeIdAsync(employeeId);
             var incidentIds = assignments
                 .Select(a => a.IncidentId)
@@ -111,9 +98,22 @@ namespace Preventyon.Service
             incident.RoleOfReporter = employee.Designation;
             incident.DocumentUrls = documentUrls;
 
-            /*            var lastEntity = await _incidentRepository.GetAllIncidents()
-                                                 .OrderByDescending(e => e.Id)
-                                                 .FirstOrDefault();*/
+
+            var allincidents = await GetAllIncidents();
+            var lastEntry = allincidents.OrderByDescending(i => i.Id).FirstOrDefault();
+            if (string.IsNullOrEmpty(lastEntry.IncidentNo) || !lastEntry.IncidentNo.StartsWith("EXPINC"))
+            {
+                incident.IncidentNo = "EXPINC1";
+            }
+            else
+            {
+                var numberPart = lastEntry.IncidentNo.Substring(6);
+                if (int.TryParse(numberPart, out int numericValue))
+                {
+                    incident.IncidentNo = $"EXPINC{numericValue + 1}";
+                }
+            }
+
             if (createIncidentDto.IsDraft)
             {
                 incident.IncidentStatus = "draft";
@@ -214,18 +214,25 @@ namespace Preventyon.Service
 
         public async Task<GetUserUpdateIncidentDTO> GetUserUpdateIncident(int id)
         {
-            //null checks
 
             var incident = await _incidentRepository.GetIncidentById(id);
 
-            return _mapper.Map<GetUserUpdateIncidentDTO>(incident);
+            if (incident == null)
+            {
+                return null;
+            }
+
+            return _mapper.Map<UpdateIncidentUserDto>(incident);
 
         }
 
         public async Task<GetIncidentsByEmployeeID> GetIncidentsAdmins()
         {
-            // Null check or any additional logic
-            return await _incidentRepository.GetAllIncidentsWithBarChart();
+
+            var incidentsByEmployee = await _incidentRepository.GetAllIncidentsWithBarChart();
+
+            return incidentsByEmployee ?? new GetIncidentsByEmployeeID();
+
         }
     }
 }

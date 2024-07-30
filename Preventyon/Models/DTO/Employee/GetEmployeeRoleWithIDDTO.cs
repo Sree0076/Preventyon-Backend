@@ -7,6 +7,7 @@
         public string Department { get; set; }
 
         public string Designation { get; set; }
+
         public string Email { get; set; }
         public RoleDTO Role { get; set; }
     }

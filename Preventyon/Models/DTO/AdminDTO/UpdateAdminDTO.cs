@@ -4,9 +4,8 @@
     {
         public int AdminId { get; set; }
 
-        public int RoleId { get; set; }
-
-
+        public Boolean isIncidentMangenet { get; set; }
+        public Boolean isUserMangenet { get; set; }
         public Boolean Status { get; set; }
     }
 }

@@ -6,8 +6,8 @@ namespace Preventyon.Service.IService
     public interface IAdminService
     {
 
-        Task<IEnumerable<Admin>> GetAllAdminsAsync();
+        Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync(int Id);
         Task<Admin> AddAdminAsync(CreateAdminDTO createAdminDTO);
-        Task UpdateAdminAsync(int adminId, int? roleId = null, bool? status = null);
+        Task UpdateAdminAsync(UpdateAdminDTO updateAdmin);
     }
 }

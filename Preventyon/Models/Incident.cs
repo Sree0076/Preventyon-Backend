@@ -10,7 +10,7 @@ namespace Preventyon.Models
 
         public int Id { get; set; }
 
-        //change to simple name
+        
         public string IncidentNo { set; get; }
 
         [Column(TypeName = "text")]
@@ -77,7 +77,7 @@ namespace Preventyon.Models
         [NotMapped]
         public bool IsCorrectionFilled { get; set; }
 
-        /*  public ICollection<AssignedIncidents> AssignedIncidents { get; set; }*/
+        public ICollection<AssignedIncidents> AssignedIncidents { get; set; }
 
         public DateTime createdAt { set; get; }
 
