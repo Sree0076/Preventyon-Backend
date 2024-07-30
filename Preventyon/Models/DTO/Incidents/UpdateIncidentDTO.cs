@@ -37,6 +37,6 @@
         public string IncidentStatus { set; get; }
         public decimal CorrectionDetailsTimeTakenToCloseIncident { set; get; }
         public decimal CorrectiveDetailsTimeTakenToCloseIncident { set; get; }
-    
-}
+
+    }
 }

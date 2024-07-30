@@ -8,9 +8,10 @@ using Preventyon.Models.DTO.Incidents;
 
 namespace Preventyon
 {
-    public class MappingConfig:Profile
+    public class MappingConfig : Profile
     {
-        public MappingConfig() {
+        public MappingConfig()
+        {
 
             CreateMap<CreateIncidentDTO, Incident>().ReverseMap();
             CreateMap<Employee, CreateEmployeeDTO>().ReverseMap();
@@ -27,6 +28,7 @@ namespace Preventyon
             CreateMap<Incident, TableFetchIncidentsDto>().ReverseMap();
             CreateMap<Incident, GetAdminIncidentDTO>().ReverseMap();
             CreateMap<AssignedIncidents, TableFetchIncidentsDto>().ReverseMap();
+            CreateMap<Incident, GetUserUpdateIncidentDTO>().ReverseMap();
         }
     }
 }
