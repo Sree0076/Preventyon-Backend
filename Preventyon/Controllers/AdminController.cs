@@ -38,11 +38,11 @@ namespace Preventyon.Controllers
         }
 
         [HttpPut("{adminId}")]
-        public async Task<IActionResult> UpdateAdmin(int adminId, int? roleId, bool? status)
+        public async Task<IActionResult> UpdateAdmin(int adminId,UpdateAdminDTO updateAdmin)
         {
             try
             {
-                await _adminService.UpdateAdminAsync(adminId, roleId, status);
+                await _adminService.UpdateAdminAsync(updateAdmin);
                 return NoContent();
             }
             catch (Exception ex)

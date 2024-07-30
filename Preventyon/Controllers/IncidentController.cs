@@ -35,7 +35,8 @@ namespace Preventyon.Controllers
             var incidents = await _incidentService.GetAllIncidents();
             return Ok(incidents);
         }
-   
+
+        
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetIncidentsByEmployeeID))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

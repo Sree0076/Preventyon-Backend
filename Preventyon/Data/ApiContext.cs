@@ -32,21 +32,21 @@ namespace Preventyon.Data
                 .WithOne(p => p.Role) 
                 .HasForeignKey<Role>(r => r.PermissionID);
 
-/*            modelBuilder.Entity<Employee>()
+            modelBuilder.Entity<Employee>()
                 .HasOne(e => e.Role)
                 .WithMany(r => r.Employees)
-                .HasForeignKey(e => e.RoleId);*/
+                .HasForeignKey(e => e.RoleId);
 
-/*            modelBuilder.Entity<AssignedIncidents>()
+            modelBuilder.Entity<AssignedIncidents>()
                         .HasOne(a => a.Incident)
                         .WithMany(i => i.AssignedIncidents)
-                        .HasForeignKey(a => a.IncidentId);*/
+                        .HasForeignKey(a => a.IncidentId);
 
-            /*            modelBuilder.Entity<Admin>()
-                       .HasOne(a => a.Employee)
-                                  .WithOne(e => e.Admin)
-                                  .HasForeignKey<Admin>(a => a.EmployeeId)
-                                  .OnDelete(DeleteBehavior.Restrict);*/
+            modelBuilder.Entity<Admin>()
+           .HasOne(a => a.Employee)
+                      .WithOne(e => e.Admin)
+                      .HasForeignKey<Admin>(a => a.EmployeeId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
         }
     }
