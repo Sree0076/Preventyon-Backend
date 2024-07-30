@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Preventyon.Models;
 using Preventyon.Models.DTO.AdminDTO;
+using Preventyon.Models.DTO.Incidents;
 using Preventyon.Repository;
 using Preventyon.Service.IService;
 
@@ -16,14 +18,18 @@ namespace Preventyon.Controllers
             _adminService = adminService;
          
         }
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetAllAdminsDto>>> GetAllAdmins()
+        [HttpGet("{Id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IEnumerable<GetAllAdminsDto>>> GetAllAdmins(int Id)
         {
-            return Ok(await _adminService.GetAllAdminsAsync());
+            return Ok(await _adminService.GetAllAdminsAsync(Id));
 
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddAdmin(CreateAdminDTO createAdminDTO)
         {
             try
@@ -38,6 +44,10 @@ namespace Preventyon.Controllers
         }
 
         [HttpPut("{adminId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateAdmin(int adminId,UpdateAdminDTO updateAdmin)
         {
             try

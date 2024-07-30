@@ -6,7 +6,7 @@ namespace Preventyon.Repository.IRepository
     public interface IAdminRepository
     {
         Task<Admin> GetAdminByIdAsync(int id);
-        Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync();
+        Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync(int employeeId);
         Task AddAdminAsync(Admin admin);
         Task UpdateAdminAsync(Admin admin);
         Task DeleteAdminAsync(int id);

@@ -23,9 +23,9 @@ namespace Preventyon.Service
             _adminRepository = adminRepository;
            
         }
-        public async Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync()
+        public async Task<IEnumerable<GetAllAdminsDto>> GetAllAdminsAsync(int Id)
         {
-            return await _adminRepository.GetAllAdminsAsync();
+            return await _adminRepository.GetAllAdminsAsync(Id);
         }
         public async Task<Admin> AddAdminAsync(CreateAdminDTO createAdminDTO)
         {
@@ -100,6 +100,10 @@ namespace Preventyon.Service
                 employee.RoleId = 3;
             }
             else
+            {
+                employee.RoleId = 4;
+            }
+            if(!updateAdmin.Status)
             {
                 employee.RoleId = 4;
             }
