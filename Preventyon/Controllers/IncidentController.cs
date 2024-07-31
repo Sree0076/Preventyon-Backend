@@ -32,14 +32,14 @@ namespace Preventyon.Controllers
             return Ok(incidents);
         }
 
-        
+
         [HttpGet("{employeeId}/{user}")]
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetIncidentsByEmployeeID))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId,bool user)
+        public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId, bool user)
         {
-            if(!user)
+            if (!user)
             {
                 var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
                 if (employee.Role.Name == "SuperAdmin" || employee.Role.Name == "Admins-User" || employee.Role.Name == "Admin-Incidents")
@@ -170,29 +170,29 @@ namespace Preventyon.Controllers
 
             return Ok(incident);
         }
-        /*
-                [HttpDelete("{id}")]
-                [ProducesResponseType(StatusCodes.Status204NoContent)]
-                [ProducesResponseType(StatusCodes.Status400BadRequest)]
-                [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-                public async Task<IActionResult> DeleteIncidentById(int id)
-                {
-                    if (id < 0)
-                    {
-                        return BadRequest("Invalid id");
-                    }
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-                    try
-                    {
-                        await _incidentService.DeleteIncidentById(id);
-                        return Ok("Incident deleted Successfully");
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        return BadRequest(ex.Message);
-                    }
-                }*/
+        public async Task<IActionResult> DeleteIncidentById(int id)
+        {
+            if (id < 0)
+            {
+                return BadRequest("Invalid id");
+            }
+
+            try
+            {
+                await _incidentService.DeleteIncidentById(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAdminIncidentsWithBarChart()
