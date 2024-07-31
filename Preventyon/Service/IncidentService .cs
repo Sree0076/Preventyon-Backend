@@ -44,7 +44,7 @@ namespace Preventyon.Service
                 .Select(a => a.IncidentId)
                 .Distinct()
                 .ToList();
-            var assignedIncidentsEntities = await _assignedIncidentRepository.GetIncidentsByIdsAsync(incidentIds);
+            var assignedIncidentsEntities = await _assignedIncidentRepository.GetIncidentsByIdsAsync(employeeId,incidentIds);
 
             var incidents = await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
 

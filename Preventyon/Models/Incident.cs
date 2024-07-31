@@ -77,6 +77,8 @@ namespace Preventyon.Models
         [NotMapped]
         public bool IsCorrectionFilled { get; set; }
 
+        [NotMapped]
+        public int? Accepted { get; set; }
         public ICollection<AssignedIncidents> AssignedIncidents { get; set; }
 
         public DateTime createdAt { set; get; }

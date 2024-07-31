@@ -109,7 +109,7 @@ namespace Preventyon.Repository
             var incidents = await _context.Incident
                           .Where(i => i.IsDraft == false)
                           .ToListAsync();
-
+                          
             var privacyIncidents = incidents.Where(i => i.IncidentType == "Privacy Incidents" ).ToList();
             var qualityIncidents = incidents.Where(i => i.IncidentType == "Quality Incidents" ).ToList();
             var securityIncidents = incidents.Where(i => i.IncidentType == "Security Incidents").ToList();

@@ -37,17 +37,21 @@ namespace Preventyon.Controllers
         }
 
         
-        [HttpGet]
+        [HttpGet("{employeeId}/{user}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetIncidentsByEmployeeID))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId)
+        public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId,bool user)
         {
-            var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-            if (employee.Role.Name == "SuperAdmin" || employee.Role.Name == "Admins-User" || employee.Role.Name == "Admin-Incidents")
+            if(!user)
             {
-                var Adminincidents = await _incidentService.GetIncidentsAdmins();
-                return Ok(Adminincidents);
+                var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+                if (employee.Role.Name == "SuperAdmin" || employee.Role.Name == "Admins-User" || employee.Role.Name == "Admin-Incidents")
+                {
+                    var Adminincidents = await _incidentService.GetIncidentsAdmins();
+                    return Ok(Adminincidents);
+                }
             }
+
             var incidents = await _incidentService.GetIncidentsByEmployeeId(employeeId);
             return Ok(incidents);
         }
