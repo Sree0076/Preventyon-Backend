@@ -43,7 +43,7 @@ namespace Preventyon.Service
                 .Select(a => a.IncidentId)
                 .Distinct()
                 .ToList();
-            var assignedIncidentsEntities = await _assignedIncidentRepository.GetIncidentsByIdsAsync(employeeId,incidentIds);
+            var assignedIncidentsEntities = await _assignedIncidentRepository.GetIncidentsByIdsAsync(employeeId, incidentIds);
 
             var incidents = await _incidentRepository.GetIncidentsByEmployeeId(employeeId);
 
@@ -186,11 +186,15 @@ namespace Preventyon.Service
             {
                 foreach (string urlToDelete in documentsToDelete)
                 {
-                    var filePathToDelete = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", urlToDelete.TrimStart('/'));
-                    if (File.Exists(filePathToDelete))
+                    if (urlToDelete != null)
                     {
-                        File.Delete(filePathToDelete);
+                        var filePathToDelete = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", urlToDelete.TrimStart('/'));
+                        if (File.Exists(filePathToDelete))
+                        {
+                            File.Delete(filePathToDelete);
+                        }
                     }
+
                 }
 
             }
@@ -236,9 +240,11 @@ namespace Preventyon.Service
 
         }
 
-        /*  public async Task DeleteIncidentById(int id)
-          {
-              await _incidentRepository.DeleteIncidentById();
-          }*/
+        public async Task DeleteIncidentById(int id)
+        {
+            await _incidentRepository.DeleteIncidentById(id);
+        }
+
+
     }
 }

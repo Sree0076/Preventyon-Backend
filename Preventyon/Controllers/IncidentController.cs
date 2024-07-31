@@ -226,6 +226,33 @@ namespace Preventyon.Controllers
             }
         }
 
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteIncidentById(int id)
+        {
+            if (id < 0)
+            {
+                _logger.LogWarning("DeleteIncidentById: Invalid ID {Id}", id);
+                return BadRequest("Invalid id");
+            }
+
+            try
+            {
+                await _incidentService.DeleteIncidentById(id);
+                _logger.LogInformation("Incident with ID {Id} deleted successfully", id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Failed to delete incident with ID {Id}", id);
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
         [HttpGet]
         public async Task<IActionResult> GetAdminIncidentsWithBarChart()
         {
