@@ -109,9 +109,9 @@ namespace Preventyon.Repository
             var incidents = await _context.Incident
                           .Where(i => i.IsDraft == false)
                           .ToListAsync();
-                          
-            var privacyIncidents = incidents.Where(i => i.IncidentType == "Privacy Incidents" ).ToList();
-            var qualityIncidents = incidents.Where(i => i.IncidentType == "Quality Incidents" ).ToList();
+
+            var privacyIncidents = incidents.Where(i => i.IncidentType == "Privacy Incidents").ToList();
+            var qualityIncidents = incidents.Where(i => i.IncidentType == "Quality Incidents").ToList();
 
             var securityIncidents = incidents.Where(i => i.IncidentType == "Security Incidents").ToList();
 
@@ -171,17 +171,18 @@ namespace Preventyon.Repository
             return incidentStats;
         }
 
-        /*   public async Task<IActionResult> DeleteIncidentById(int id)
-           {
-               var incident = _context.Incident.FindAsync(id);
-               if (incident == null)
-               {
-                   throw new ArgumentException("Incident not found");
+        public async Task DeleteIncidentById(int id)
+        {
+            var incident = await _context.Incident.FindAsync(id);
+            if (incident == null)
+            {
+                throw new ArgumentException("Incident not found");
 
-               }
+            }
 
-               _context.Incident.Remove(incident);
-           }*/
+            _context.Incident.Remove(incident);
+            await _context.SaveChangesAsync();
+        }
 
     }
 }
