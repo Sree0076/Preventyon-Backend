@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Preventyon.Models.DTO.Incidents;
-using Preventyon.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Preventyon.Models;
+using Preventyon.Models.DTO.Incidents;
 using Preventyon.Repository.IRepository;
 using Preventyon.Service.IService;
 
@@ -15,11 +15,11 @@ namespace Preventyon.Service
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IMapper _mapper;
 
-        public IncidentService(IIncidentRepository incidentRepository, IEmployeeRepository employeeRepository,IAssignedIncidentRepository assignedIncidentRepository, IMapper mapper)
+        public IncidentService(IIncidentRepository incidentRepository, IEmployeeRepository employeeRepository, IAssignedIncidentRepository assignedIncidentRepository, IMapper mapper)
         {
             _incidentRepository = incidentRepository;
             _employeeRepository = employeeRepository;
-            _assignedIncidentRepository= assignedIncidentRepository;
+            _assignedIncidentRepository = assignedIncidentRepository;
             _mapper = mapper;
         }
 
@@ -92,11 +92,12 @@ namespace Preventyon.Service
                 }
             }
 
-             createIncidentDto.IncidentOccuredDate = createIncidentDto.IncidentOccuredDate.ToUniversalTime();
+            createIncidentDto.IncidentOccuredDate = createIncidentDto.IncidentOccuredDate.ToUniversalTime();
             var incident = _mapper.Map<Incident>(createIncidentDto);
             incident.ReportedBy = employee.Name;
             incident.RoleOfReporter = employee.Designation;
             incident.DocumentUrls = documentUrls;
+
 
             var allincidents = await GetAllIncidents();
             var lastEntry = allincidents.OrderByDescending(i => i.Id).FirstOrDefault();
@@ -121,7 +122,7 @@ namespace Preventyon.Service
             {
                 incident.IncidentStatus = "pending";
             }
-           
+
 
             await _incidentRepository.AddIncident(incident);
 
@@ -139,7 +140,7 @@ namespace Preventyon.Service
             await _incidentRepository.UpdateIncident(incident, updateIncidentDto);
         }
 
-        public async Task UserUpdateIncident(int id, CreateIncidentDTO updateIncidentDto)
+        public async Task UserUpdateIncident(int id, UpdateIncidentUserDto updateIncidentDto)
         {
             var incident = await _incidentRepository.GetIncidentById(id);
             if (incident == null)
@@ -147,10 +148,13 @@ namespace Preventyon.Service
                 throw new ArgumentException("Invalid incident ID");
             }
 
-            List<string> documentUrls = new List<string>();
-            if (updateIncidentDto.DocumentUrls != null)
+
+            List<string> UserGivenOldDocumentUrls = updateIncidentDto.OldDocumentUrls ?? new List<string>();
+            List<string> NewUploadedDocuments = new List<string>();
+
+            if (updateIncidentDto.NewDocumentUrls != null)
             {
-                foreach (IFormFile document in updateIncidentDto.DocumentUrls)
+                foreach (IFormFile document in updateIncidentDto.NewDocumentUrls)
                 {
                     var fileName = Guid.NewGuid().ToString() + Path.GetExtension(document.FileName);
                     var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
@@ -167,13 +171,36 @@ namespace Preventyon.Service
                         await document.CopyToAsync(stream);
                     }
 
-                    documentUrls.Add($"/images/{fileName}");
+                    NewUploadedDocuments.Add($"/images/{fileName}");
                 }
             }
 
+
+            List<string> finalDocumentUrls = incident.DocumentUrls.Intersect(UserGivenOldDocumentUrls).Concat(NewUploadedDocuments).Distinct().ToList();
+            Console.WriteLine(finalDocumentUrls);
+
+            List<string> documentsToDelete = UserGivenOldDocumentUrls.Except(finalDocumentUrls).ToList();
+
+            if (documentsToDelete.Count > 0)
+            {
+                foreach (string urlToDelete in documentsToDelete)
+                {
+                    var filePathToDelete = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", urlToDelete.TrimStart('/'));
+                    if (File.Exists(filePathToDelete))
+                    {
+                        File.Delete(filePathToDelete);
+                    }
+                }
+
+            }
+
+
+
+            incident.DocumentUrls = finalDocumentUrls;
+
             updateIncidentDto.IncidentOccuredDate = DateTime.SpecifyKind(updateIncidentDto.IncidentOccuredDate, DateTimeKind.Utc);
             updateIncidentDto.EmployeeId = incident.EmployeeId;
-            if (updateIncidentDto.IsDraft ==true)
+            if (updateIncidentDto.IsDraft == true)
             {
                 incident.IncidentStatus = "draft";
             }
@@ -185,8 +212,9 @@ namespace Preventyon.Service
             await _incidentRepository.UserUpdateIncident(incident, updateIncidentDto);
         }
 
-        public async Task<UpdateIncidentUserDto> GetUserUpdateIncident(int id)
+        public async Task<GetUserUpdateIncidentDTO> GetUserUpdateIncident(int id)
         {
+
             var incident = await _incidentRepository.GetIncidentById(id);
 
             if (incident == null)
@@ -195,13 +223,16 @@ namespace Preventyon.Service
             }
 
             return _mapper.Map<UpdateIncidentUserDto>(incident);
+
         }
 
         public async Task<GetIncidentsByEmployeeID> GetIncidentsAdmins()
         {
+
             var incidentsByEmployee = await _incidentRepository.GetAllIncidentsWithBarChart();
 
             return incidentsByEmployee ?? new GetIncidentsByEmployeeID();
+
         }
     }
 }

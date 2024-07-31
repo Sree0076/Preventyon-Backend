@@ -88,7 +88,7 @@ namespace Preventyon.Repository
             return incident;
         }
 
-        public async Task<Incident> UserUpdateIncident(Incident incident, CreateIncidentDTO updateIncidentDto)
+        public async Task<Incident> UserUpdateIncident(Incident incident, UpdateIncidentUserDto updateIncidentDto)
         {
             _mapper.Map(updateIncidentDto, incident);
             _context.Entry(incident).State = EntityState.Modified;
@@ -112,6 +112,7 @@ namespace Preventyon.Repository
                           
             var privacyIncidents = incidents.Where(i => i.IncidentType == "Privacy Incidents" ).ToList();
             var qualityIncidents = incidents.Where(i => i.IncidentType == "Quality Incidents" ).ToList();
+
             var securityIncidents = incidents.Where(i => i.IncidentType == "Security Incidents").ToList();
 
             int totalPrivacyIncidents = privacyIncidents.Count;
@@ -130,7 +131,7 @@ namespace Preventyon.Repository
             {
                 incident.IsCorrectionFilled = (!string.IsNullOrEmpty(incident.Correction)) && (!string.IsNullOrEmpty(incident.CorrectiveAction));
             }
-                        var fiveYearsAgo = DateTime.Now.AddYears(-5);
+            var fiveYearsAgo = DateTime.Now.AddYears(-5);
             var filteredIncidents = incidents.Where(i => i.IncidentOccuredDate >= fiveYearsAgo).ToList();
 
             var groupedIncidents = filteredIncidents
@@ -170,7 +171,7 @@ namespace Preventyon.Repository
             return incidentStats;
         }
 
-    
+
 
     }
 }

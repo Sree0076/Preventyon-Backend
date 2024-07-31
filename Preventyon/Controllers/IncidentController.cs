@@ -1,16 +1,12 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
-using Preventyon.Repository;
-using Preventyon.Repository.IRepository;
 using Preventyon.Service.IService;
 
 
 namespace Preventyon.Controllers
 {
- 
+
     [ApiController]
     [Route("api/[Controller]/[Action]")]
 
@@ -38,6 +34,7 @@ namespace Preventyon.Controllers
 
         
         [HttpGet("{employeeId}/{user}")]
+
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetIncidentsByEmployeeID))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId,bool user)
@@ -88,7 +85,7 @@ namespace Preventyon.Controllers
                 var incident = await _incidentService.CreateIncident(createIncidentDto);
                 var emailResult = await _emailService.SendNotificationAsync(createIncidentDto.EmployeeId, incident);
 
-                if(emailResult)
+                if (emailResult)
                 {
                     return CreatedAtAction(nameof(GetIncident), new { id = incident.Id }, incident);
                 }
@@ -134,7 +131,7 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] CreateIncidentDTO updateIncidentDto)
+        public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] UpdateIncidentUserDto updateIncidentDto)
         {
             if (id <= 0)
             {
@@ -162,10 +159,10 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UpdateIncidentUserDto>> GetUserUpdateIncident(int id)
+        public async Task<ActionResult<GetUserUpdateIncidentDTO>> GetUserUpdateIncident(int id)
         {
             var incident = await _incidentService.GetUserUpdateIncident(id);
-            
+
             if (incident == null)
             {
                 return NotFound();
