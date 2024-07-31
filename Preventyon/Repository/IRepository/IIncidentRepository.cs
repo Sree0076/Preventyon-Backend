@@ -15,5 +15,6 @@ namespace Preventyon.Repository.IRepository
         Task<Incident> UpdateIncidentAsync(Incident incident);
 
         Task<GetIncidentsByEmployeeID> GetAllIncidentsWithBarChart();
+        //Task<IActionResult> DeleteIncidentById(int id);
     }
 }

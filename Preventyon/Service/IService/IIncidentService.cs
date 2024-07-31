@@ -15,5 +15,6 @@ namespace Preventyon.Service.IService
         Task<GetUserUpdateIncidentDTO> GetUserUpdateIncident(int id);
 
         Task<GetIncidentsByEmployeeID> GetIncidentsAdmins();
+        //Task<IActionResult> DeleteIncidentById(int id);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
@@ -38,7 +37,7 @@ namespace Preventyon.Service
 
         public async Task<GetIncidentsByEmployeeID> GetIncidentsByEmployeeId(int employeeId)
         {
-          
+
             var assignments = await _assignedIncidentRepository.GetAssignmentsByEmployeeIdAsync(employeeId);
             var incidentIds = assignments
                 .Select(a => a.IncidentId)
@@ -122,7 +121,9 @@ namespace Preventyon.Service
             {
                 incident.IncidentStatus = "pending";
             }
-
+            incident.Category = createIncidentDto.Category ?? "Other"; // Or handle null accordingly
+            incident.Priority = createIncidentDto.Priority ?? "High";
+            incident.IncidentType = createIncidentDto.IncidentType ?? "Quality Incidents";
 
             await _incidentRepository.AddIncident(incident);
 
@@ -222,7 +223,7 @@ namespace Preventyon.Service
                 return null;
             }
 
-            return _mapper.Map<UpdateIncidentUserDto>(incident);
+            return _mapper.Map<GetUserUpdateIncidentDTO>(incident);
 
         }
 
@@ -234,5 +235,10 @@ namespace Preventyon.Service
             return incidentsByEmployee ?? new GetIncidentsByEmployeeID();
 
         }
+
+        /*  public async Task DeleteIncidentById(int id)
+          {
+              await _incidentRepository.DeleteIncidentById();
+          }*/
     }
 }

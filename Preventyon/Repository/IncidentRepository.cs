@@ -171,7 +171,17 @@ namespace Preventyon.Repository
             return incidentStats;
         }
 
+        /*   public async Task<IActionResult> DeleteIncidentById(int id)
+           {
+               var incident = _context.Incident.FindAsync(id);
+               if (incident == null)
+               {
+                   throw new ArgumentException("Incident not found");
 
+               }
+
+               _context.Incident.Remove(incident);
+           }*/
 
     }
 }
