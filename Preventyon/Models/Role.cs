@@ -1,4 +1,6 @@
-﻿namespace Preventyon.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Preventyon.Models
 {
     public class Role
     {
@@ -7,6 +9,7 @@
 
         public int PermissionID { get; set; }
 
+        [JsonIgnore]
         public Permission Permission { get; set; }
 
         public ICollection<Employee> Employees { get; set; }
