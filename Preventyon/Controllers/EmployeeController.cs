@@ -4,20 +4,23 @@ using Preventyon.Data;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Employee;
 using Preventyon.Service.IService;
+using Serilog;
 
 namespace Preventyon.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]/[Action]")] 
+    [Route("api/[Controller]/[Action]")]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _service;
         private readonly ApiContext _context;
+        private readonly ILogger<EmployeeController> _logger;
 
-        public EmployeeController(IEmployeeService service, ApiContext context)
+        public EmployeeController(IEmployeeService service, ApiContext context, ILogger<EmployeeController> logger)
         {
             _service = service;
             _context = context;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -27,14 +30,18 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PostEmployee([FromBody] CreateEmployeeDTO employeedto)
         {
+            _logger.LogInformation("Attempting to add a new employee.");
+
             try
             {
                 Employee employee = await _service.AddEmployee(employeedto);
+                _logger.LogInformation("Employee added successfully with ID {EmployeeId}.", employee.Id);
                 return Ok(employee);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                _logger.LogError(ex, "Error occurred while adding a new employee.");
+                return BadRequest(ex.Message);
             }
         }
 
@@ -45,14 +52,18 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployees()
         {
+            _logger.LogInformation("Fetching all employees.");
+
             try
             {
                 List<GetEmployeesDTO> getEmployees = await _service.GetEmployees();
+                _logger.LogInformation("Successfully fetched {Count} employees.", getEmployees.Count);
                 return Ok(getEmployees);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                _logger.LogError(ex, "Error occurred while fetching employees.");
+                return BadRequest(ex.Message);
             }
         }
 
@@ -63,14 +74,24 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployeeByIdAsync(int id)
         {
+            _logger.LogInformation("Fetching employee with ID {EmployeeId}.", id);
+
             try
             {
                 GetEmployeeRoleWithIDDTO employee = await _service.GetEmployeeByIdAsync(id);
+                if (employee == null)
+                {
+                    _logger.LogWarning("Employee with ID {EmployeeId} not found.", id);
+                    return NotFound($"Employee with ID {id} not found.");
+                }
+
+                _logger.LogInformation("Successfully fetched employee with ID {EmployeeId}.", id);
                 return Ok(employee);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                _logger.LogError(ex, "Error occurred while fetching employee with ID {EmployeeId}.", id);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -81,29 +102,37 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployeeByTokenAsync()
         {
+            _logger.LogInformation("Attempting to fetch employee role based on token.");
+
             var jwtStream = Request.Headers["Authorization"].FirstOrDefault();
 
             if (string.IsNullOrEmpty(jwtStream))
+            {
+                _logger.LogWarning("Authorization header missing or invalid.");
                 return BadRequest("Authorization header missing or invalid");
+            }
 
             try
             {
                 var employee = await _service.GetEmployeeByTokenAsync(jwtStream, _context);
+                _logger.LogInformation("Successfully fetched employee role based on token.");
                 return Ok(employee);
             }
             catch (SecurityTokenException ex)
             {
+                _logger.LogError(ex, "Security token error occurred.");
                 return BadRequest(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
+                _logger.LogWarning(ex, "Employee not found for the provided token.");
                 return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                _logger.LogError(ex, "Error occurred while fetching employee role based on token.");
+                return BadRequest(ex.Message);
             }
         }
-
     }
 }

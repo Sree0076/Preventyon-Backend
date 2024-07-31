@@ -1,13 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Preventyon.Data;
 using Preventyon.Models;
-using Microsoft.EntityFrameworkCore;
-using Preventyon.Repository.IRepository;
-using System.Text.Json;
-using Preventyon.Repository;
 using Preventyon.Service.IService;
-
+using Serilog;
 
 namespace Preventyon.Controllers
 {
@@ -16,10 +11,12 @@ namespace Preventyon.Controllers
     public class AssignedIncidentController : ControllerBase
     {
         private readonly IAssignedIncidentService _assignedIncidentService;
+        private readonly ILogger<AssignedIncidentController> _logger;
 
-        public AssignedIncidentController(IAssignedIncidentService assignedIncidentService)
+        public AssignedIncidentController(IAssignedIncidentService assignedIncidentService, ILogger<AssignedIncidentController> logger)
         {
             _assignedIncidentService = assignedIncidentService;
+            _logger = logger;
         }
 
         [HttpPost("AssignIncidentToEmployees/{incidentId}")]
@@ -28,23 +25,42 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AssignIncidentToEmployees(int incidentId, [FromBody] List<int> employeeIds)
         {
+            _logger.LogInformation("Attempting to assign incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
+
             try
             {
                 await _assignedIncidentService.AssignIncidentToEmployeesAsync(incidentId, employeeIds);
+                _logger.LogInformation("Successfully assigned incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
             {
+                _logger.LogWarning(ex, "Incident {IncidentId} not found while assigning to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
                 return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while assigning incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpGet("{employeeId}")]
         public async Task<IActionResult> GetAssignedIncidentsForEmployee(int employeeId)
         {
-           /* null check*/
-            var incidents = await _assignedIncidentService.GetAssignedIncidentsForEmployeeAsync(employeeId);
-            return Ok(incidents);
+            _logger.LogInformation("Fetching assigned incidents for employee {EmployeeId}", employeeId);
+
+            try
+            {
+                var incidents = await _assignedIncidentService.GetAssignedIncidentsForEmployeeAsync(employeeId);
+                _logger.LogInformation("Successfully fetched {Count} incidents for employee {EmployeeId}", incidents?.Count ?? 0, employeeId);
+                return Ok(incidents);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching assigned incidents for employee {EmployeeId}", employeeId);
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

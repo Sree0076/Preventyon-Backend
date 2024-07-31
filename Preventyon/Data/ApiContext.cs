@@ -19,6 +19,7 @@ namespace Preventyon.Data
         public DbSet<Role> Role { get; set; } 
         public DbSet <Permission> Permission { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
         public DbSet<AssignedIncidents> AssignedIncidents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

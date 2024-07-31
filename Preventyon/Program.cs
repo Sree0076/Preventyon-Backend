@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -11,6 +13,7 @@ using Preventyon.Repository;
 using Preventyon.Repository.IRepository;
 using Preventyon.Service;
 using Preventyon.Service.IService;
+using Serilog;
 using System.Net.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,25 +36,21 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Preventyon API", Version = "v1" });
 });
 
-/*######################################################################################################################*/
+/*###############################################  SERILOGGRR #######################################################################*/
+var logerConfig = builder.Configuration.GetSection("Serilog");
+Log.Logger = new LoggerConfiguration()
+           .ReadFrom.Configuration(logerConfig)
+           .WriteTo.Console()
+           .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+           .CreateLogger();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.Authority = "https://login.microsoftonline.com/5b751804-232f-410d-bb2f-714e3bb466eb/v2.0";
-    options.Audience = "13cd173a-2f30-45a1-8ee8-9b0028cf7f37";
-});
-
-// Configure authorization
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-});
-
+builder.Host.UseSerilog()  // Integrate Serilog into the application
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                config.AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true);
+                config.AddEnvironmentVariables();
+            });
 
 /*#########################################################################################################################*/
 
@@ -87,7 +86,7 @@ builder.Services.AddFluentEmail(smtpSettings.FromEmail, smtpSettings.FromName)
 
 
 builder.Services.AddDbContext<ApiContext>(options =>
-    options.UseNpgsql("Host=preventyonserver.postgres.database.azure.com;Database=Preventyon;Username=preventyon;Password=root@2024"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 var app = builder.Build();
 
 app.UseCors("AllowAll");

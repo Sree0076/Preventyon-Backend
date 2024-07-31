@@ -2,25 +2,25 @@
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
 using Preventyon.Service.IService;
-
+using Serilog;
 
 namespace Preventyon.Controllers
 {
-
     [ApiController]
     [Route("api/[Controller]/[Action]")]
-
     public class IncidentController : ControllerBase
     {
         private readonly IIncidentService _incidentService;
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
+        private readonly ILogger<IncidentController> _logger;
 
-        public IncidentController(IIncidentService incidentService, IEmployeeService employeeService, IEmailService emailService)
+        public IncidentController(IIncidentService incidentService, IEmployeeService employeeService, IEmailService emailService, ILogger<IncidentController> logger)
         {
             _incidentService = incidentService;
             _employeeService = employeeService;
             _emailService = emailService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -28,29 +28,48 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<Incident>>> GetIncidents()
         {
-            var incidents = await _incidentService.GetAllIncidents();
-            return Ok(incidents);
+            _logger.LogInformation("Fetching all incidents.");
+            try
+            {
+                var incidents = await _incidentService.GetAllIncidents();
+                _logger.LogInformation("Successfully fetched {Count} incidents.", incidents.Count());
+                return Ok(incidents);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching incidents.");
+                return BadRequest("Failed to fetch incidents.");
+            }
         }
 
-        
         [HttpGet("{employeeId}/{user}")]
-
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetIncidentsByEmployeeID))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId,bool user)
+        public async Task<IActionResult> GetIncidentsByEmployeeId(int employeeId, bool user)
         {
-            if(!user)
+            _logger.LogInformation("Fetching incidents for EmployeeId: {EmployeeId}, IsUser: {IsUser}", employeeId, user);
+            try
             {
-                var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-                if (employee.Role.Name == "SuperAdmin" || employee.Role.Name == "Admins-User" || employee.Role.Name == "Admin-Incidents")
+                if (!user)
                 {
-                    var Adminincidents = await _incidentService.GetIncidentsAdmins();
-                    return Ok(Adminincidents);
+                    var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+                    if (employee.Role.Name == "SuperAdmin" || employee.Role.Name == "Admins-User" || employee.Role.Name == "Admin-Incidents")
+                    {
+                        _logger.LogInformation("Fetching incidents for admins.");
+                        var adminIncidents = await _incidentService.GetIncidentsAdmins();
+                        return Ok(adminIncidents);
+                    }
                 }
-            }
 
-            var incidents = await _incidentService.GetIncidentsByEmployeeId(employeeId);
-            return Ok(incidents);
+                var incidents = await _incidentService.GetIncidentsByEmployeeId(employeeId);
+                _logger.LogInformation("Successfully fetched incidents for EmployeeId: {EmployeeId}.", employeeId);
+                return Ok(incidents);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching incidents for EmployeeId: {EmployeeId}.", employeeId);
+                return BadRequest("Failed to fetch incidents.");
+            }
         }
 
         [HttpGet("{id}")]
@@ -59,14 +78,25 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Incident>> GetIncident(int id)
         {
-            var incident = await _incidentService.GetIncidentById(id);
-
-            if (incident == null)
+            _logger.LogInformation("Fetching incident with ID: {IncidentId}", id);
+            try
             {
-                return NotFound();
-            }
+                var incident = await _incidentService.GetIncidentById(id);
 
-            return Ok(incident);
+                if (incident == null)
+                {
+                    _logger.LogWarning("Incident with ID: {IncidentId} not found.", id);
+                    return NotFound();
+                }
+
+                _logger.LogInformation("Successfully fetched incident with ID: {IncidentId}.", id);
+                return Ok(incident);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching incident with ID: {IncidentId}.", id);
+                return BadRequest("Failed to fetch incident.");
+            }
         }
 
         [HttpPost]
@@ -75,8 +105,10 @@ namespace Preventyon.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<Incident>> CreateIncident([FromForm] CreateIncidentDTO createIncidentDto)
         {
+            _logger.LogInformation("Creating a new incident.");
             if (createIncidentDto == null)
             {
+                _logger.LogWarning("CreateIncidentDTO is null.");
                 return BadRequest("Incident data is required");
             }
 
@@ -87,13 +119,16 @@ namespace Preventyon.Controllers
 
                 if (emailResult)
                 {
+                    _logger.LogInformation("Incident created and notification sent successfully. IncidentId: {IncidentId}", incident.Id);
                     return CreatedAtAction(nameof(GetIncident), new { id = incident.Id }, incident);
                 }
 
-                return BadRequest("Email Not Send");
+                _logger.LogWarning("Incident created but email notification failed. IncidentId: {IncidentId}", incident.Id);
+                return BadRequest("Email Not Sent");
             }
             catch (ArgumentException ex)
             {
+                _logger.LogError(ex, "An error occurred while creating the incident.");
                 return BadRequest(ex.Message);
             }
         }
@@ -105,23 +140,28 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateIncident(int id, [FromBody] UpdateIncidentDTO updateIncidentDto)
         {
+            _logger.LogInformation("Updating incident with ID: {IncidentId}", id);
             if (id <= 0)
             {
+                _logger.LogWarning("Invalid incident ID: {IncidentId}", id);
                 return BadRequest("Invalid incident ID");
             }
 
             if (updateIncidentDto == null)
             {
+                _logger.LogWarning("UpdateIncidentDTO is null for incident ID: {IncidentId}", id);
                 return BadRequest("Incident update data is required");
             }
 
             try
             {
                 await _incidentService.UpdateIncident(id, updateIncidentDto);
+                _logger.LogInformation("Incident with ID: {IncidentId} updated successfully.", id);
                 return NoContent();
             }
             catch (ArgumentException ex)
             {
+                _logger.LogError(ex, "An error occurred while updating incident with ID: {IncidentId}.", id);
                 return NotFound(ex.Message);
             }
         }
@@ -133,27 +173,31 @@ namespace Preventyon.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UserUpdateIncident(int id, [FromForm] UpdateIncidentUserDto updateIncidentDto)
         {
+            _logger.LogInformation("Updating incident (User) with ID: {IncidentId}", id);
             if (id <= 0)
             {
+                _logger.LogWarning("Invalid incident ID: {IncidentId}", id);
                 return BadRequest("Invalid incident ID");
             }
 
             if (updateIncidentDto == null)
             {
+                _logger.LogWarning("UpdateIncidentUserDto is null for incident ID: {IncidentId}", id);
                 return BadRequest("Incident update data is required");
             }
 
             try
             {
                 await _incidentService.UserUpdateIncident(id, updateIncidentDto);
+                _logger.LogInformation("Incident (User) with ID: {IncidentId} updated successfully.", id);
                 return NoContent();
             }
             catch (ArgumentException ex)
             {
+                _logger.LogError(ex, "An error occurred while updating incident (User) with ID: {IncidentId}.", id);
                 return NotFound(ex.Message);
             }
         }
-
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Incident))]
@@ -161,45 +205,42 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<GetUserUpdateIncidentDTO>> GetUserUpdateIncident(int id)
         {
-            var incident = await _incidentService.GetUserUpdateIncident(id);
-
-            if (incident == null)
+            _logger.LogInformation("Fetching UserUpdateIncident with ID: {IncidentId}", id);
+            try
             {
-                return NotFound();
-            }
+                var incident = await _incidentService.GetUserUpdateIncident(id);
 
-            return Ok(incident);
-        }
-        /*
-                [HttpDelete("{id}")]
-                [ProducesResponseType(StatusCodes.Status204NoContent)]
-                [ProducesResponseType(StatusCodes.Status400BadRequest)]
-                [ProducesResponseType(StatusCodes.Status404NotFound)]
-
-                public async Task<IActionResult> DeleteIncidentById(int id)
+                if (incident == null)
                 {
-                    if (id < 0)
-                    {
-                        return BadRequest("Invalid id");
-                    }
+                    _logger.LogWarning("UserUpdateIncident with ID: {IncidentId} not found.", id);
+                    return NotFound();
+                }
 
-                    try
-                    {
-                        await _incidentService.DeleteIncidentById(id);
-                        return Ok("Incident deleted Successfully");
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        return BadRequest(ex.Message);
-                    }
-                }*/
+                _logger.LogInformation("Successfully fetched UserUpdateIncident with ID: {IncidentId}.", id);
+                return Ok(incident);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching UserUpdateIncident with ID: {IncidentId}.", id);
+                return BadRequest("Failed to fetch incident.");
+            }
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAdminIncidentsWithBarChart()
         {
-            var result = await _incidentService.GetIncidentsAdmins();
-            return Ok(result); // Automatically serializes the DTO to JSON
+            _logger.LogInformation("Fetching incidents for admins with bar chart data.");
+            try
+            {
+                var result = await _incidentService.GetIncidentsAdmins();
+                _logger.LogInformation("Successfully fetched incidents for admins.");
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching admin incidents with bar chart data.");
+                return BadRequest("Failed to fetch admin incidents.");
+            }
         }
-
     }
 }
