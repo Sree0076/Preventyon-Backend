@@ -47,7 +47,7 @@ namespace Preventyon.EndPoints
                 .Produces(400)
                 .Produces(404);
         }
-        private async static Task<IResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeRoleDTO employeeDTO, IMapper _mapper, IEmployeeRepository _employeeRepo)
+        public async static Task<IResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeRoleDTO employeeDTO, IMapper _mapper, IEmployeeRepository _employeeRepo)
         {
             APIResponse response = new APIResponse();
             var existingEmployee = await _employeeRepo.FindAsync(id);
@@ -71,7 +71,7 @@ namespace Preventyon.EndPoints
 
 
 
-        private async static Task<IResult> updateIncidentByReview(int id, [FromBody] UpdateIncidentByReviewDto incidentByReviewDto, IMapper _mapper, IIncidentRepository incidentRepository)
+        public async static Task<IResult> updateIncidentByReview(int id, [FromBody] UpdateIncidentByReviewDto incidentByReviewDto, IMapper _mapper, IIncidentRepository incidentRepository)
         {
             APIResponse response = new APIResponse();
             var existingIncident = await incidentRepository.GetIncidentById(id);
@@ -98,7 +98,7 @@ namespace Preventyon.EndPoints
         }
 
 
-        private async static Task<IResult> acceptIncidents(int incidentId, [FromBody] int employeeId,ApiContext apiContext)
+        public async static Task<IResult> acceptIncidents(int incidentId, [FromBody] int employeeId,ApiContext apiContext)
         {
             APIResponse response = new APIResponse();
 
@@ -140,7 +140,7 @@ namespace Preventyon.EndPoints
             return Results.Ok(response);
         }
 
-        private async static Task<IResult> incidentApproval(int id, [FromServices] IIncidentRepository _incidentRepository)
+        public async static Task<IResult> incidentApproval(int id, [FromServices] IIncidentRepository _incidentRepository)
         {
             APIResponse response = new APIResponse();
             var existingIncident = await _incidentRepository.GetIncidentById(id);
