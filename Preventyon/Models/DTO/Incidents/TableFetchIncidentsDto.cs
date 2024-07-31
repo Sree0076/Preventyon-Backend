@@ -11,10 +11,13 @@
         public string ReportedBy { get; set; }
         public string Priority { get; set; }
 
+       
         public string IncidentStatus { set; get; }
 
         public bool IsSubmittedForReview { get; set; }
         public bool IsCorrectionFilled { get; set; }
+
+        public int? Accepted { get; set; }
         public bool IsDraft { get; set; }
     }
 }

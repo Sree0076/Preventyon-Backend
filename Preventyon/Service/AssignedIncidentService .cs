@@ -29,13 +29,14 @@ namespace Preventyon.Service
                 throw new KeyNotFoundException("Incident not found");
             }
 
-            var employeeNames = (await _employeeRepository.GetEmployees())
+/*            var employeeNames = (await _employeeRepository.GetEmployees())
                 .Where(e => employeeIds.Contains(e.Id))
                 .Select(e => e.Name)
-                .ToList();
+                .ToList();*/
 
             incident.IncidentStatus = "progress";
-            incident.ActionAssignedTo = JsonSerializer.Serialize(employeeNames);
+
+          //  incident.ActionAssignedTo = JsonSerializer.Serialize(employeeNames);
 
             var assignment = new AssignedIncidents
             {
@@ -55,7 +56,7 @@ namespace Preventyon.Service
                 .Distinct()
                 .ToList();
 
-            return await _assignedIncidentRepository.GetIncidentsByIdsAsync(incidentIds);
+            return await _assignedIncidentRepository.GetIncidentsByIdsAsync(employeeId,incidentIds);
         }
     }
 }
