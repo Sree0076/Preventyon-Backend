@@ -7,5 +7,6 @@
         public string AssignedTo { get; set; }
         public int? Accepted { get; set; }
         public Incident Incident { get; set; }
+        
     }
 }

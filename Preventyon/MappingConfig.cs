@@ -4,6 +4,7 @@ using Preventyon.Models.DTO;
 using Preventyon.Models.DTO.AdminDTO;
 using Preventyon.Models.DTO.Employee;
 using Preventyon.Models.DTO.Incidents;
+using Preventyon.Models.DTO.Notification;
 
 
 namespace Preventyon
@@ -30,6 +31,8 @@ namespace Preventyon
             CreateMap<Incident, GetAdminIncidentDTO>().ReverseMap();
             CreateMap<AssignedIncidents, TableFetchIncidentsDto>().ReverseMap();
             CreateMap<Incident, GetUserUpdateIncidentDTO>().ReverseMap();
+            CreateMap<Notification, CreateNotificationDTO>().ReverseMap();
+
         }
     }
 }

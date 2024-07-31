@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Preventyon.Models;
 using Preventyon.Models.DTO.AdminDTO;
-using Preventyon.Models.DTO.Incidents;
-using Preventyon.Repository;
 using Preventyon.Service.IService;
+using Serilog;
 
 namespace Preventyon.Controllers
 {
@@ -12,19 +10,31 @@ namespace Preventyon.Controllers
     public class AdminsController : ControllerBase
     {
         private readonly IAdminService _adminService;
+        private readonly ILogger<AdminsController> _logger;
 
-        public AdminsController(IAdminService adminService)
+        public AdminsController(IAdminService adminService, ILogger<AdminsController> logger)
         {
             _adminService = adminService;
-         
+            _logger = logger;
         }
+
         [HttpGet("{Id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<GetAllAdminsDto>>> GetAllAdmins(int Id)
         {
-            return Ok(await _adminService.GetAllAdminsAsync(Id));
+            _logger.LogInformation("Getting all admins for ID {Id}", Id);
 
+            try
+            {
+                var admins = await _adminService.GetAllAdminsAsync(Id);
+                return Ok(admins);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting admins for ID {Id}", Id);
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
@@ -32,13 +42,17 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddAdmin(CreateAdminDTO createAdminDTO)
         {
+            _logger.LogInformation("Adding a new admin");
+
             try
             {
                 var admin = await _adminService.AddAdminAsync(createAdminDTO);
+                _logger.LogInformation("Admin created successfully with ID {Id}", admin.AdminId);
                 return Ok(admin);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred while adding a new admin");
                 return BadRequest(ex.Message);
             }
         }
@@ -48,15 +62,19 @@ namespace Preventyon.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateAdmin(int adminId,UpdateAdminDTO updateAdmin)
+        public async Task<IActionResult> UpdateAdmin(int adminId, UpdateAdminDTO updateAdmin)
         {
+            _logger.LogInformation("Updating admin with ID {adminId}", adminId);
+
             try
             {
                 await _adminService.UpdateAdminAsync(updateAdmin);
+                _logger.LogInformation("Admin with ID {adminId} updated successfully", adminId);
                 return NoContent();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred while updating admin with ID {adminId}", adminId);
                 return BadRequest(ex.Message);
             }
         }
