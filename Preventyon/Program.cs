@@ -15,6 +15,7 @@ using Preventyon.Service;
 using Preventyon.Service.IService;
 using Serilog;
 using System.Net.Mail;
+using static Preventyon.Service.NotifiactionService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,11 +64,13 @@ builder.Services.AddScoped<IAssignedIncidentRepository, AssignedIncidentReposito
 builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped< EmployeeRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 // Register Services
 builder.Services.AddScoped<IAssignedIncidentService, AssignedIncidentService>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
 builder.Services.AddScoped<IEmployeeService,EmployeeService>();
 builder.Services.AddScoped <IEmailService, EmailService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailRepository,EmailRepository>();
 
 var smtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();

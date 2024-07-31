@@ -100,17 +100,24 @@ namespace Preventyon.Service
 
             var allincidents = await GetAllIncidents();
             var lastEntry = allincidents.OrderByDescending(i => i.Id).FirstOrDefault();
-            if (string.IsNullOrEmpty(lastEntry.IncidentNo) || !lastEntry.IncidentNo.StartsWith("EXPINC"))
+            if (lastEntry != null)
             {
-                incident.IncidentNo = "EXPINC1";
+                if (string.IsNullOrEmpty(lastEntry.IncidentNo) || !lastEntry.IncidentNo.StartsWith("EXPINC"))
+                {
+                    incident.IncidentNo = "EXPINC1";
+                }
+                else
+                {
+                    var numberPart = lastEntry.IncidentNo.Substring(6);
+                    if (int.TryParse(numberPart, out int numericValue))
+                    {
+                        incident.IncidentNo = $"EXPINC{numericValue + 1}";
+                    }
+                }
             }
             else
             {
-                var numberPart = lastEntry.IncidentNo.Substring(6);
-                if (int.TryParse(numberPart, out int numericValue))
-                {
-                    incident.IncidentNo = $"EXPINC{numericValue + 1}";
-                }
+                incident.IncidentNo = "EXPINC1";
             }
 
             if (createIncidentDto.IsDraft)

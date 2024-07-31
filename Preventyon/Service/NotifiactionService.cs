@@ -3,7 +3,6 @@ using Preventyon.Models;
 using Preventyon.Models.DTO.Notification;
 using Preventyon.Repository.IRepository;
 using Preventyon.Service.IService;
-using static Preventyon.Service.NotifiactionService;
 
 namespace Preventyon.Service
 {

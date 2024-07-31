@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Preventyon.Models;
 using Preventyon.Models.DTO.Incidents;
+using Preventyon.Models.DTO.Notification;
 using Preventyon.Service.IService;
 using Serilog;
 
@@ -13,13 +14,15 @@ namespace Preventyon.Controllers
         private readonly IIncidentService _incidentService;
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<IncidentController> _logger;
 
-        public IncidentController(IIncidentService incidentService, IEmployeeService employeeService, IEmailService emailService, ILogger<IncidentController> logger)
+        public IncidentController(IIncidentService incidentService, IEmployeeService employeeService, IEmailService emailService, ILogger<IncidentController> logger,INotificationService notificationService)
         {
             _incidentService = incidentService;
             _employeeService = employeeService;
             _emailService = emailService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -125,6 +128,8 @@ namespace Preventyon.Controllers
 
                 _logger.LogWarning("Incident created but email notification failed. IncidentId: {IncidentId}", incident.Id);
                 return BadRequest("Email Not Sent");
+
+                
             }
             catch (ArgumentException ex)
             {
@@ -250,7 +255,6 @@ namespace Preventyon.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
 
 
         [HttpGet]
