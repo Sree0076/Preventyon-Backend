@@ -21,7 +21,7 @@ namespace Preventyon.Service
             _incidentRepository = incidentRepository;
         }
 
-        public async Task AssignIncidentToEmployeesAsync(int incidentId, List<int> employeeIds)
+        public async Task AssignIncidentToEmployeesAsync(int incidentId, AssignIncidentRequest request)
         {
             var incident = await _incidentRepository.GetIncidentById(incidentId);
             if (incident == null)
@@ -29,20 +29,18 @@ namespace Preventyon.Service
                 throw new KeyNotFoundException("Incident not found");
             }
 
-/*            var employeeNames = (await _employeeRepository.GetEmployees())
-                .Where(e => employeeIds.Contains(e.Id))
-                .Select(e => e.Name)
-                .ToList();*/
-
             incident.IncidentStatus = "progress";
-
-          //  incident.ActionAssignedTo = JsonSerializer.Serialize(employeeNames);
 
             var assignment = new AssignedIncidents
             {
                 IncidentId = incidentId,
-                AssignedTo = JsonSerializer.Serialize(employeeIds),
+                AssignedTo = JsonSerializer.Serialize(request.AssignedEmployeeIds),
             };
+
+            Console.WriteLine(request.Remarks);
+            incident.Remarks = request.Remarks;
+            Console.WriteLine(incident.Remarks);
+
 
             await _assignedIncidentRepository.AddAssignmentAsync(assignment);
             await _incidentRepository.UpdateIncidentAsync(incident);
@@ -56,7 +54,7 @@ namespace Preventyon.Service
                 .Distinct()
                 .ToList();
 
-            return await _assignedIncidentRepository.GetIncidentsByIdsAsync(employeeId,incidentIds);
+            return await _assignedIncidentRepository.GetIncidentsByIdsAsync(employeeId, incidentIds);
         }
     }
 }

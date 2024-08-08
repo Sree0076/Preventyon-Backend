@@ -1,8 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Http.HttpResults;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 namespace Preventyon.Models
 {
     public class Incident
@@ -10,7 +6,7 @@ namespace Preventyon.Models
 
         public int Id { get; set; }
 
-        
+
         public string IncidentNo { set; get; }
 
         [Column(TypeName = "text")]
@@ -83,13 +79,15 @@ namespace Preventyon.Models
 
         public DateTime createdAt { set; get; }
 
-        
+
 
         public Incident()
         {
             createdAt = DateTime.UtcNow;
         }
-       
+
+        public string Remarks { get; set; }
+
     }
 
 }
