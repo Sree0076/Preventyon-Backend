@@ -4,7 +4,7 @@ namespace Preventyon.Service.IService
 {
     public interface IAssignedIncidentService
     {
-        Task AssignIncidentToEmployeesAsync(int incidentId, List<int> employeeIds);
+        Task AssignIncidentToEmployeesAsync(int incidentId, AssignIncidentRequest request);
         Task<List<Incident>> GetAssignedIncidentsForEmployeeAsync(int employeeId);
     }
 }

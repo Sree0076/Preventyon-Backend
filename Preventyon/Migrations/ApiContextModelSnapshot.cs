@@ -59,6 +59,9 @@ namespace Preventyon.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("Accepted")
+                        .HasColumnType("integer");
+
                     b.Property<string>("AssignedTo")
                         .HasColumnType("text");
 
@@ -214,6 +217,38 @@ namespace Preventyon.Migrations
                     b.ToTable("Incident");
                 });
 
+            modelBuilder.Entity("Preventyon.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IncidentId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("IncidentId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("Preventyon.Models.Permission", b =>
                 {
                     b.Property<int>("Id")
@@ -301,6 +336,25 @@ namespace Preventyon.Migrations
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Preventyon.Models.Notification", b =>
+                {
+                    b.HasOne("Preventyon.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Preventyon.Models.Incident", "Incident")
+                        .WithMany()
+                        .HasForeignKey("IncidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Incident");
                 });
 
             modelBuilder.Entity("Preventyon.Models.Role", b =>

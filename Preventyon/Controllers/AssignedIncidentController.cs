@@ -1,13 +1,12 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Preventyon.Models;
 using Preventyon.Service.IService;
-using Serilog;
 
 namespace Preventyon.Controllers
 {
     [Route("api/[controller]/[Action]")]
     [ApiController]
+
     public class AssignedIncidentController : ControllerBase
     {
         private readonly IAssignedIncidentService _assignedIncidentService;
@@ -20,30 +19,32 @@ namespace Preventyon.Controllers
         }
 
         [HttpPost("AssignIncidentToEmployees/{incidentId}")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AssignIncidentToEmployees(int incidentId, [FromBody] List<int> employeeIds)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AssignIncidentToEmployees(int incidentId, [FromBody] AssignIncidentRequest request)
         {
-            _logger.LogInformation("Attempting to assign incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
+            _logger.LogInformation("Attempting to assign incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", request.AssignedEmployeeIds));
 
             try
             {
-                await _assignedIncidentService.AssignIncidentToEmployeesAsync(incidentId, employeeIds);
-                _logger.LogInformation("Successfully assigned incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
-                return NoContent();
+                await _assignedIncidentService.AssignIncidentToEmployeesAsync(incidentId, request);
+                _logger.LogInformation("Successfully assigned incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", request.AssignedEmployeeIds));
+                return Ok("Incident successfully assigned and remarks updated.");
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning(ex, "Incident {IncidentId} not found while assigning to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
+                _logger.LogWarning(ex, "Incident {IncidentId} not found while assigning to employees: {EmployeeIds}", incidentId, string.Join(", ", request.AssignedEmployeeIds));
                 return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while assigning incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", employeeIds));
+                _logger.LogError(ex, "Error occurred while assigning incident {IncidentId} to employees: {EmployeeIds}", incidentId, string.Join(", ", request.AssignedEmployeeIds));
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpGet("{employeeId}")]
         public async Task<IActionResult> GetAssignedIncidentsForEmployee(int employeeId)
